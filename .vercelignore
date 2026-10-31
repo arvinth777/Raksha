@@ -1,0 +1,7 @@
+.env*
+!.env.example
+.convex
+tests
+*.py
+requirements.txt
+stitch_remix_of_emergency_location_tracker_ui
