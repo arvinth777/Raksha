@@ -1,0 +1,29 @@
+{
+  "name": "raksha-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "convex dev",
+    "console": "tsx scripts/test-console-server.ts",
+    "worker": "tsx scripts/caption-worker.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test",
+    "console:cli": "tsx scripts/console.ts"
+  },
+  "dependencies": {
+    "convex": "^1.49.0",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/ws": "^8.18.2",
+    "convex-test": "^0.0.66",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.7",
+    "vitest": "^5.0.5"
+  }
+}
