@@ -5,10 +5,7 @@ import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import * as model from "./model";
 import { sessionView } from "./views";
-export async function snapshot(
-  ctx: QueryCtx,
-  sessionId: Id<"sessions">,
-) {
+export async function snapshot(ctx: QueryCtx, sessionId: Id<"sessions">) {
   const s = await ctx.db.get(sessionId);
   if (!s) return null;
   const jobs = await ctx.db
@@ -85,7 +82,14 @@ export const tick = internalMutation({
       await ctx.db.patch(s._id, {
         monitoringState: healthy ? "healthy" : "degraded",
       });
-      if (healthy && !s.agentSpeaking && Date.now() - s.lastUserAt >= 20000)
+      // Typed demo only: on voice calls Raksha asks out loud and handles silence itself,
+      // and listening to Raksha would otherwise look like caller silence.
+      if (
+        s.mode === "demo" &&
+        healthy &&
+        !s.agentSpeaking &&
+        Date.now() - s.lastUserAt >= 20000
+      )
         await model.checkIn(ctx, s._id, "silence");
     }
     await ctx.scheduler.runAfter(5000, internal.sessions.tick, a);

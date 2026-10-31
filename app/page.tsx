@@ -617,11 +617,16 @@ export default function RakshaUserApp() {
         {activeCheckIn && activeCheckIn.status === "pending" && (
           <div
             role="dialog"
-            aria-modal="true"
+            aria-modal={session?.mode === "demo"}
             aria-labelledby="checkInTitle"
-            className="fixed inset-0 z-50 bg-ink/50 flex items-end sm:items-center justify-center p-4"
+            className={
+              session?.mode === "demo"
+                ? "fixed inset-0 z-50 bg-ink/50 flex items-end sm:items-center justify-center p-4"
+                : // On a voice call, a card above the SOS bar: no backdrop, the call stays usable.
+                  "fixed inset-x-0 bottom-28 z-50 flex justify-center px-4 pointer-events-none"
+            }
           >
-            <div className="w-full max-w-sm bg-paper rounded-card p-6 space-y-5 shadow-2xl">
+            <div className="pointer-events-auto w-full max-w-sm bg-paper rounded-card p-6 space-y-5 shadow-2xl border border-warn/40">
               <div className="flex items-baseline justify-between">
                 <p className="text-xs font-medium text-warn uppercase tracking-wider">
                   Safety check-in
