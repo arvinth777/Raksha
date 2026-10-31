@@ -5,7 +5,8 @@ import { ConvexError } from "convex/values";
 import dynamic from "next/dynamic";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Chip, LogLine, Panel, Row, btn } from "../../components/ui";
+import { Chip, LogLine } from "../../components/ui";
+import { OpsSidePanel } from "../../components/OpsSidePanel";
 import { Id } from "../../convex/_generated/dataModel";
 import {
   Shield,
@@ -440,124 +441,16 @@ function RakshaOpsDashboard() {
           </section>
         </main>
 
-        {/* COLUMN 3: QUICK-ACTION DISPATCH TERMINAL */}
-        <section className="w-full xl:w-80 bg-paper-2 border-l border-rule flex flex-col shrink-0 xl:overflow-y-auto custom-scrollbar">
-          <div className="p-4 border-b border-rule">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-display text-2xl text-ink truncate">
-                {selectedSession?.userName ?? "Select a session"}
-              </h2>
-              <Chip
-                tone={
-                  isEmergency
-                    ? "danger"
-                    : isPatrolDispatched
-                      ? "accent"
-                      : "muted"
-                }
-                live={isEmergency}
-              >
-                {isEmergency
-                  ? "SOS"
-                  : isPatrolDispatched
-                    ? "Police alerted"
-                    : "Session"}
-              </Chip>
-            </div>
-          </div>
-          <div className="p-4 space-y-4 flex-1">
-            <Panel label="Session">
-              <dl>
-                <Row label="Call">
-                  {selectedSession ? label(selectedSession.callState) : "—"}
-                </Row>
-                <Row label="Listening">
-                  {selectedSession
-                    ? label(selectedSession.monitoringState)
-                    : "—"}
-                </Row>
-                <Row label="Incident" tone={isEmergency ? "danger" : "ink"}>
-                  {selectedSession?.incident
-                    ? label(selectedSession.incident.state)
-                    : "none"}
-                </Row>
-                <Row label="Check-in">
-                  {selectedSession?.view.checkIn
-                    ? label(selectedSession.view.checkIn.status)
-                    : "none"}
-                </Row>
-                <Row
-                  label="Police alert"
-                  tone={delivery?.state === "failed" ? "danger" : "ink"}
-                >
-                  {delivery?.state ?? "not sent"}
-                </Row>
-              </dl>
-            </Panel>
-            <Panel label="Caller">
-              <dl>
-                <Row label="Phone">{selectedSession?.userPhone || "—"}</Row>
-                <Row
-                  label="Position"
-                  tone={selectedSession?.location ? "ink" : "muted"}
-                >
-                  {selectedSession?.location
-                    ? `${selectedSession.location.latitude.toFixed(4)}, ${selectedSession.location.longitude.toFixed(4)}`
-                    : "unavailable"}
-                </Row>
-                {selectedSession?.location && (
-                  <Row label="Accuracy">
-                    ±{Math.round(selectedSession.location.accuracyM)} m
-                  </Row>
-                )}
-                <Row
-                  label="Battery"
-                  tone={selectedSession?.view.session.battery ? "ink" : "muted"}
-                >
-                  {selectedSession?.battery ?? "—"}
-                </Row>
-                <Row label="Police">demo stand-in</Row>
-              </dl>
-            </Panel>
-          </div>
-          <div className="p-4 space-y-2 border-t border-rule">
-            <button
-              onClick={handleDispatch}
-              disabled={
-                busy ||
-                !selectedSession ||
-                selectedSession.ended ||
-                isPatrolDispatched
-              }
-              className={`${btn.primary} w-full disabled:bg-paper-3 disabled:text-ink-3 disabled:opacity-100`}
-            >
-              <Zap className="w-5 h-5" />
-              {isPatrolDispatched
-                ? `police · ${delivery?.state}`
-                : "alert police (demo)"}
-            </button>
-            <button
-              disabled={busy || !selectedSession || selectedSession.ended}
-              onClick={handleCheckIn}
-              className={`${btn.outline} w-full border-warn/50 text-warn`}
-            >
-              <Timer className="w-4 h-4" />
-              Start 30 s safety check-in
-            </button>
-            <button
-              disabled={
-                busy ||
-                !selectedSession?.incident ||
-                selectedSession.incident.state === "resolved"
-              }
-              onClick={handleResolve}
-              className={`${btn.quiet} w-full`}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Resolve incident…
-            </button>
-          </div>
-        </section>
+        <OpsSidePanel
+          selectedSession={selectedSession}
+          isEmergency={isEmergency}
+          isPatrolDispatched={isPatrolDispatched}
+          delivery={delivery}
+          busy={busy}
+          onDispatch={handleDispatch}
+          onCheckIn={handleCheckIn}
+          onResolve={handleResolve}
+        />
       </div>
     </div>
   );

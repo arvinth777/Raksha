@@ -121,3 +121,8 @@ export function LogLine({
     </li>
   );
 }
+
+/** "dispatch_queued" → "dispatch queued" for display. */
+export function label(state: string) {
+  return state.replaceAll("_", " ");
+}

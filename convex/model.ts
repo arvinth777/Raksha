@@ -17,7 +17,7 @@ export async function event(
 }
 // Demo-only placeholders, used when DEMO_SAMPLE_DATA=true and real data is missing.
 // Location is never faked: no GPS means "unavailable".
-export const SAMPLE_NAME = "Priya Sharma";
+export const SAMPLE_NAME = "Ananya Rao";
 export const SAMPLE_PHONE = "+91 98765 43210";
 export function profile(mode: "demo" | "live" | "web") {
   const sample = process.env.DEMO_SAMPLE_DATA === "true";

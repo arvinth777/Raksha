@@ -1,22 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useAction } from "convex/react";
 import { ConvexError } from "convex/values";
 import { VoiceCall } from "../components/VoiceCall";
 import { Readiness } from "../components/Readiness";
-import { Chip, LogLine, Panel, Row, btn } from "../components/ui";
+import { Chip, btn } from "../components/ui";
+import { InCallView } from "../components/InCallView";
+import { CheckInCard } from "../components/CheckInCard";
+import { useBatteryReport } from "../components/useBatteryReport";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
-import {
-  MapPin,
-  PhoneCall,
-  PhoneOff,
-  CheckCircle2,
-  AlertTriangle,
-  Siren,
-  Timer,
-} from "lucide-react";
+import { PhoneCall, AlertTriangle, Siren } from "lucide-react";
 
 export default function RakshaUserApp() {
   const me = useQuery(api.web.me);
@@ -145,41 +140,7 @@ export default function RakshaUserApp() {
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // Battery Status API (Chrome/Android; not Safari): sent with the session, never invented.
-  const reportDevice = useMutation(api.web.device);
-  useEffect(() => {
-    const nav = navigator as Navigator & {
-      getBattery?: () => Promise<{
-        level: number;
-        charging: boolean;
-        addEventListener: (t: string, f: () => void) => void;
-        removeEventListener: (t: string, f: () => void) => void;
-      }>;
-    };
-    if (!sessionId || session?.ended || !nav.getBattery) return;
-    let battery: Awaited<
-      ReturnType<NonNullable<typeof nav.getBattery>>
-    > | null = null;
-    const send = () =>
-      battery &&
-      void reportDevice({
-        sessionId,
-        batteryLevel: battery.level,
-        charging: battery.charging,
-      }).catch(() => {});
-    void nav.getBattery().then((b) => {
-      battery = b;
-      send();
-      b.addEventListener("levelchange", send);
-      b.addEventListener("chargingchange", send);
-    });
-    const t = setInterval(send, 60000);
-    return () => {
-      clearInterval(t);
-      battery?.removeEventListener("levelchange", send);
-      battery?.removeEventListener("chargingchange", send);
-    };
-  }, [sessionId, session?.ended, reportDevice]);
+  useBatteryReport(sessionId, !!session?.ended);
   const lastSent = useRef(0);
   useEffect(() => {
     if (
@@ -433,142 +394,26 @@ export default function RakshaUserApp() {
               />
             </>
           ) : (
-            <>
-              <section className="space-y-2">
-                <p className="label text-[10px] text-ink-3">
-                  {session?.mode === "demo"
-                    ? "Typed demo"
-                    : session?.mode === "web"
-                      ? "In-app call"
-                      : "Phone call"}
-                </p>
-                <h1
-                  className={`font-display lc text-4xl leading-tight ${
-                    sosActive ? "text-danger" : "text-ink"
-                  }`}
-                >
-                  {sosActive
-                    ? "Police contact alerted"
-                    : callFailed
-                      ? "The call couldn't be placed"
-                      : session?.callState === "connected"
-                        ? "Raksha is with you"
-                        : "Connecting you to Raksha"}
-                </h1>
-                <p className={callFailed ? "text-danger" : "text-ink-2"}>
-                  {sosActive
-                    ? "Your location and what you said were shared. Stay on the line."
-                    : callFailed
-                      ? `${callFailed} End this session and try an In-app call.`
-                      : "Talk naturally. Say “call the police” any time you need help."}
-                </p>
-              </section>
-
-              <Panel
-                label="Live transcript"
-                action={
-                  <button
-                    onClick={() => setShowTranscript((v) => !v)}
-                    aria-expanded={showTranscript}
-                    className="label text-[10px] text-accent hover:underline"
-                  >
-                    {showTranscript ? "Hide" : "Show"}
-                  </button>
-                }
-              >
-                {showTranscript && (
-                  <ol aria-live="polite">
-                    {lastLines.length === 0 ? (
-                      <li className="text-sm text-ink-3 py-1.5">
-                        Listening… your words appear here as Raksha hears them.
-                      </li>
-                    ) : (
-                      lastLines.map((t) => (
-                        <LogLine
-                          key={t._id}
-                          who={
-                            t.speaker === "user"
-                              ? "You"
-                              : t.speaker === "agent"
-                                ? "Raksha"
-                                : "?"
-                          }
-                          tone={t.speaker === "agent" ? "accent" : "ink"}
-                        >
-                          {t.text}
-                        </LogLine>
-                      ))
-                    )}
-                  </ol>
-                )}
-              </Panel>
-              {session?.mode === "web" && (
-                <Panel label="Call">
-                  <VoiceCall sessionId={session._id} purpose="user" autoJoin />
-                </Panel>
-              )}
-              {session?.mode === "live" && !callFailed && (
-                <p className="text-sm text-ink-2 border-l-2 border-accent pl-3">
-                  Raksha is calling your phone. Answer it in your normal dialer.
-                </p>
-              )}
-              {session?.mode === "demo" && (
-                <form className="flex gap-2" onSubmit={sayDemo}>
-                  <label className="sr-only" htmlFor="demoSpeech">
-                    Demo speech
-                  </label>
-                  <input
-                    id="demoSpeech"
-                    value={speech}
-                    onChange={(e) => setSpeech(e.target.value)}
-                    placeholder="Type what you'd say on the call"
-                    className="flex-1 min-w-0 min-h-[48px] rounded-input bg-paper border border-rule px-3.5 text-sm placeholder:text-ink-3 focus:border-accent outline-none"
-                  />
-                  <button
-                    disabled={busy || !speech.trim()}
-                    className={`${btn.outline} min-h-[48px]`}
-                  >
-                    Say
-                  </button>
-                </form>
-              )}
-
-              <Panel label="Status">
-                <dl>
-                  <Row label="Call">{label(session!.callState)}</Row>
-                  <Row label="Listening">{label(session!.monitoringState)}</Row>
-                  <Row label="Police" tone={police ? "danger" : "muted"}>
-                    {police ? label(police.state) : "not alerted"}
-                  </Row>
-                  <Row label="Location" tone={loc ? "ink" : "muted"}>
-                    {loc
-                      ? `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`
-                      : "not shared"}
-                  </Row>
-                </dl>
-              </Panel>
-
-              <section className="grid grid-cols-[1fr_auto] gap-3">
-                <button
-                  onClick={() =>
-                    perform(() => reportSafe({ sessionId: session!._id }))
-                  }
-                  className={`${btn.outline} border-safe text-ink`}
-                >
-                  <CheckCircle2 className="w-5 h-5 text-safe" />
-                  I'm safe
-                </button>
-                <button
-                  onClick={() =>
-                    perform(() => endSession({ sessionId: session!._id }))
-                  }
-                  className={btn.quiet}
-                >
-                  <PhoneOff className="w-4 h-4" />
-                  End
-                </button>
-              </section>
-            </>
+            <InCallView
+              session={session!}
+              sosActive={sosActive}
+              callFailed={callFailed}
+              busy={busy}
+              speech={speech}
+              setSpeech={setSpeech}
+              onSay={sayDemo}
+              showTranscript={showTranscript}
+              setShowTranscript={setShowTranscript}
+              lines={lastLines}
+              police={police}
+              loc={loc}
+              onSafe={() =>
+                perform(() => reportSafe({ sessionId: session!._id }))
+              }
+              onEnd={() =>
+                perform(() => endSession({ sessionId: session!._id }))
+              }
+            />
           )}
         </main>
 
@@ -597,83 +442,22 @@ export default function RakshaUserApp() {
           </p>
         </div>
 
-        {/* Safety check-in */}
         {activeCheckIn && activeCheckIn.status === "pending" && (
-          <div
-            role="dialog"
-            aria-modal={session?.mode === "demo"}
-            aria-labelledby="checkInTitle"
-            className={
-              session?.mode === "demo"
-                ? "fixed inset-0 z-50 bg-ink/50 flex items-end sm:items-center justify-center p-4"
-                : // On a voice call, a card above the SOS bar: no backdrop, the call stays usable.
-                  "fixed inset-x-0 bottom-28 z-50 flex justify-center px-4 pointer-events-none"
+          <CheckInCard
+            reason={activeCheckIn.reason}
+            countdown={countdown}
+            demo={session?.mode === "demo"}
+            autoEscalate={!!session?.autoEscalate}
+            onRespond={(response) =>
+              perform(() =>
+                respondCheckIn({
+                  checkInId: activeCheckIn._id,
+                  expectedVersion: activeCheckIn.version,
+                  response,
+                }),
+              )
             }
-          >
-            <div className="pointer-events-auto w-full max-w-sm bg-paper rounded-card border border-warn shadow-2xl">
-              <div className="flex items-center justify-between px-5 pt-4">
-                <p className="label text-[10px] text-warn">Safety check-in</p>
-                <p
-                  className="font-mono text-3xl tabular text-ink"
-                  aria-live={countdown % 10 === 0 ? "polite" : "off"}
-                >
-                  {String(countdown).padStart(2, "0")}
-                  <span className="text-sm text-ink-3">s</span>
-                </p>
-              </div>
-              <div className="h-px mx-5 mt-3 bg-rule overflow-hidden">
-                <div
-                  className="h-full bg-warn transition-[width] duration-1000 ease-linear"
-                  style={{ width: `${(countdown / 30) * 100}%` }}
-                />
-              </div>
-              <div className="px-5 py-4 space-y-1.5">
-                <h2 id="checkInTitle" className="font-display lc text-3xl">
-                  Are you feeling safe?
-                </h2>
-                <p className="text-sm text-ink-2">
-                  {activeCheckIn.reason === "silence"
-                    ? "We haven't heard from you for a while."
-                    : "Something in the conversation sounded concerning."}{" "}
-                  {session?.autoEscalate
-                    ? "If you don't answer, Raksha will alert the police contact."
-                    : "Automatic alerts are off; Raksha will keep listening."}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 border-t border-rule divide-x divide-rule">
-                <button
-                  onClick={() =>
-                    perform(() =>
-                      respondCheckIn({
-                        checkInId: activeCheckIn._id,
-                        expectedVersion: activeCheckIn.version,
-                        response: "safe",
-                      }),
-                    )
-                  }
-                  className="min-h-[56px] flex items-center justify-center gap-2 font-display lc text-xl text-safe hover:bg-paper-2 rounded-bl-card"
-                >
-                  <CheckCircle2 className="w-5 h-5" />
-                  I'm safe
-                </button>
-                <button
-                  onClick={() =>
-                    perform(() =>
-                      respondCheckIn({
-                        checkInId: activeCheckIn._id,
-                        expectedVersion: activeCheckIn.version,
-                        response: "help",
-                      }),
-                    )
-                  }
-                  className="min-h-[56px] flex items-center justify-center gap-2 font-display lc text-xl bg-danger text-danger-ink hover:bg-danger/90 rounded-br-card"
-                >
-                  <Siren className="w-5 h-5" />
-                  Send SOS
-                </button>
-              </div>
-            </div>
-          </div>
+          />
         )}
       </div>
     </div>
@@ -689,6 +473,3 @@ const ERRORS: Record<string, string> = {
   UNAUTHENTICATED: "Your sign-in expired. Sign in again.",
   DEMO_ONLY: "Typed speech only works in demo sessions.",
 };
-function label(state: string) {
-  return state.replaceAll("_", " ");
-}
