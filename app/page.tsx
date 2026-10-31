@@ -244,6 +244,14 @@ export default function RakshaUserApp() {
         clientRequestId: startRequestId.current,
         mode: callMode,
         autoEscalate,
+        location: gpsCoords
+          ? {
+              latitude: gpsCoords.lat,
+              longitude: gpsCoords.lng,
+              accuracyM: gpsCoords.accuracy,
+              capturedAt: gpsCoords.capturedAt,
+            }
+          : undefined,
       });
       setActiveSessionId(id);
       startRequestId.current = null;

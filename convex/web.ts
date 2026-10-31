@@ -72,7 +72,20 @@ export const get = query({
 });
 const mode = sessionMode;
 export const start = mutation({
-  args: { clientRequestId: v.string(), mode, autoEscalate: v.boolean() },
+  args: {
+    clientRequestId: v.string(),
+    mode,
+    autoEscalate: v.boolean(),
+    // GPS the app already has, so the caller agent can confirm it instead of asking.
+    location: v.optional(
+      v.object({
+        latitude: v.number(),
+        longitude: v.number(),
+        accuracyM: v.number(),
+        capturedAt: v.number(),
+      }),
+    ),
+  },
   returns: v.id("sessions"),
   handler: async (ctx, a) => {
     const u = await viewer(ctx);
@@ -81,7 +94,26 @@ export const start = mutation({
       (u.role !== "operator" || process.env.LIVE_CALLS_ENABLED !== "true")
     )
       throw new ConvexError("LIVE_CALLS_DISABLED");
-    return model.start(ctx, u._id, a.clientRequestId, a.autoEscalate, a.mode);
+    const id = await model.start(
+      ctx,
+      u._id,
+      a.clientRequestId,
+      a.autoEscalate,
+      a.mode,
+    );
+    const l = a.location;
+    // Same bounds as the location mutation; the dispatch scheduled above runs after this commits.
+    if (
+      l &&
+      Object.values(l).every(Number.isFinite) &&
+      Math.abs(l.latitude) <= 90 &&
+      Math.abs(l.longitude) <= 180 &&
+      l.accuracyM >= 0 &&
+      l.capturedAt <= Date.now() + 30000 &&
+      l.capturedAt >= Date.now() - 300000
+    )
+      await ctx.db.patch(id, { location: l });
+    return id;
   },
 });
 export const sos = mutation({

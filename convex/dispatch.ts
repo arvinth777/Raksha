@@ -60,6 +60,9 @@ export const run = internalAction({
     // Per-call tool capability; the agent passes it back as session_token when it uses a Raksha tool.
     const toolToken = randomBytes(32).toString("hex");
     const metadata = {
+      ...(work.purpose === "user"
+        ? await callerContext(ctx, work.sessionId)
+        : {}),
       raksha_tool_token: toolToken,
       raksha_session_id: work.sessionId,
       purpose: work.purpose,
@@ -250,4 +253,22 @@ export function spellPhone(phone: string) {
       )
       .join(", ")
   );
+}
+
+// What the caller agent already knows from the app, so it confirms instead of asking.
+async function callerContext(
+  ctx: { runQuery: ActionCtx["runQuery"] },
+  sessionId: Id<"sessions">,
+) {
+  const view = await ctx.runQuery(internal.sessions.inspect, { sessionId });
+  const loc = view?.session.location;
+  const known =
+    loc && !loc.sample
+      ? ((await streetAddress(loc.latitude, loc.longitude)) ??
+        `latitude ${loc.latitude.toFixed(4)}, longitude ${loc.longitude.toFixed(4)}`)
+      : "unknown";
+  return {
+    known_location: known,
+    user_name: profile(view?.session.mode ?? "demo").name,
+  };
 }
