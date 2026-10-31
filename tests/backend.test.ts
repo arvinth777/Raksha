@@ -595,7 +595,8 @@ describe("agent tools", () => {
       method: "POST",
       body: JSON.stringify({ session_token: "b".repeat(64), reason: "x" }),
     });
-    expect(bad.status).toBe(403);
+    expect(bad.status).toBe(200);
+    expect((await bad.json()).ok).toBe(false);
     const ok = await t.fetch("/vaani/tools/sos", {
       method: "POST",
       body: JSON.stringify({
