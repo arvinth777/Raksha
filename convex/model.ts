@@ -245,7 +245,7 @@ export async function screen(
       .slice(0, 3)
       .reverse()
       .map((t) => t.text.trim());
-    const said = [...earlier, text.trim()].join(" ").slice(-400);
+    const said = joinSpeech([...earlier, text.trim()]).slice(-400);
     await sos(ctx, sessionId, `Caller said: "${said}"`);
   } else {
     await event(ctx, sessionId, "detect.concern", hit.phrase);
@@ -271,14 +271,13 @@ export async function screenAgent(
     .filter((t) => t.speaker === "user" && t.isFinal)
     .slice(0, 2)
     .reverse()
-    .map((t) => t.text.trim())
-    .join(" ");
+    .map((t) => t.text.trim());
   await event(ctx, sessionId, "detect.agent_alert", text.slice(0, 120));
   await sos(
     ctx,
     sessionId,
-    caller
-      ? `Raksha raised SOS after the caller said: "${caller.slice(0, 300)}"`
+    caller.length
+      ? `Raksha raised SOS after the caller said: "${joinSpeech(caller).slice(0, 300)}"`
       : "Raksha raised SOS on the call",
   );
 }
@@ -310,4 +309,12 @@ export async function respond(
     lastUserAt: Date.now(),
   });
   await event(ctx, c.sessionId, "check_in.confirmed_safe");
+}
+
+// Caption fragments arrive without end punctuation; add a full stop between them.
+export function joinSpeech(parts: string[]) {
+  return parts
+    .filter(Boolean)
+    .map((p) => (/[.!?,]$/.test(p) ? p : `${p}.`))
+    .join(" ");
 }

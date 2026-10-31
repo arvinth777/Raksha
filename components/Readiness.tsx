@@ -1,16 +1,21 @@
 "use client";
 // Lumen apparatus for the citizen app: a hairline receiver with mono readouts of the
-// app's real state. Nothing here is invented; unknown stays unknown.
-export function Readiness({
-  rows,
-}: {
-  rows: { label: string; value: string; ok: boolean }[];
-}) {
+// app's real state. Nothing here is invented; unknown stays unknown. A readout with an
+// `onPress` is also its own control (share location, toggle check-in alerts).
+type Readout = {
+  label: string;
+  value: string;
+  ok: boolean;
+  onPress?: () => void;
+  hint?: string;
+};
+
+export function Readiness({ rows }: { rows: Readout[] }) {
   return (
-    <figure className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-2">
+    <figure className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-1">
       <ul className="space-y-5 text-right">
         {rows.slice(0, 2).map((r) => (
-          <Readout key={r.label} {...r} />
+          <Item key={r.label} {...r} />
         ))}
       </ul>
       <svg
@@ -34,7 +39,7 @@ export function Readiness({
       </svg>
       <ul className="space-y-5">
         {rows.slice(2, 4).map((r) => (
-          <Readout key={r.label} {...r} />
+          <Item key={r.label} {...r} />
         ))}
       </ul>
       <figcaption className="sr-only">
@@ -44,21 +49,34 @@ export function Readiness({
   );
 }
 
-function Readout({
-  label,
-  value,
-  ok,
-}: {
-  label: string;
-  value: string;
-  ok: boolean;
-}) {
+function Item({ label, value, ok, onPress, hint }: Readout) {
+  const body = (
+    <>
+      <span className="label block text-[10px] text-ink-3">{label}</span>
+      <span
+        className={`block text-sm tabular ${ok ? "text-ink" : "text-ink-3"}`}
+      >
+        {value}
+      </span>
+      {hint && (
+        <span className="label block text-[9px] text-accent mt-0.5">
+          {hint}
+        </span>
+      )}
+    </>
+  );
   return (
     <li>
-      <p className="label text-[10px] text-ink-3">{label}</p>
-      <p className={`text-sm tabular ${ok ? "text-ink" : "text-ink-3"}`}>
-        {value}
-      </p>
+      {onPress ? (
+        <button
+          onClick={onPress}
+          className="min-h-[44px] text-inherit hover:opacity-80"
+        >
+          {body}
+        </button>
+      ) : (
+        body
+      )}
     </li>
   );
 }

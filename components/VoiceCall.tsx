@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Room, RoomEvent, Track } from "livekit-client";
 import { Mic, MicOff, PhoneCall, PhoneOff, Volume2 } from "lucide-react";
 import { api } from "../convex/_generated/api";
+import { btn } from "./ui";
 import type { Id } from "../convex/_generated/dataModel";
 
 type State = "idle" | "connecting" | "connected" | "ended" | "error";
@@ -142,12 +143,10 @@ export function VoiceCall({
             error: "Call failed",
           }[state];
 
-  const btn =
-    "min-h-[44px] px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50";
   return (
     <div className="space-y-2">
       <div ref={speakers} hidden />
-      <p aria-live="polite" className="text-sm font-medium">
+      <p aria-live="polite" className="label text-[10px] text-ink-2">
         {status}
       </p>
       {purpose === "user" && state === "connected" && (
@@ -168,7 +167,7 @@ export function VoiceCall({
                 setState("idle");
                 void join();
               }}
-              className={`${btn} bg-accent hover:bg-accent/90 text-accent-ink`}
+              className={`${btn.primary} text-lg`}
             >
               <PhoneCall className="w-4 h-4" />
               {state === "idle" ? joinLabel : "Rejoin call"}
@@ -177,7 +176,7 @@ export function VoiceCall({
         {needsTap && (
           <button
             onClick={() => void room.current?.startAudio()}
-            className={`${btn} bg-warn text-ink`}
+            className={`${btn.outline} border-warn text-warn`}
           >
             <Volume2 className="w-4 h-4" />
             Tap to hear Raksha
@@ -188,7 +187,7 @@ export function VoiceCall({
             <button
               onClick={() => void toggleMute()}
               aria-pressed={muted}
-              className={`${btn} bg-paper-3 hover:bg-rule text-ink`}
+              className={btn.outline}
             >
               {muted ? (
                 <MicOff className="w-4 h-4" />
@@ -199,7 +198,7 @@ export function VoiceCall({
             </button>
             <button
               onClick={() => void room.current?.disconnect()}
-              className={`${btn} bg-danger hover:bg-danger/90 text-danger-ink`}
+              className={btn.danger}
             >
               <PhoneOff className="w-4 h-4" />
               Hang up

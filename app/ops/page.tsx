@@ -5,6 +5,7 @@ import { ConvexError } from "convex/values";
 import dynamic from "next/dynamic";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { Chip, LogLine, Panel, Row, btn } from "../../components/ui";
 import { Id } from "../../convex/_generated/dataModel";
 import {
   Shield,
@@ -159,43 +160,31 @@ function RakshaOpsDashboard() {
       className="flex-1 xl:flex-none xl:h-[calc(100dvh-2rem)] bg-paper text-ink flex flex-col font-sans selection:bg-accent selection:text-accent-ink"
     >
       {/* 1. TOP COMMAND BAR */}
-      <header className="min-h-14 py-2 bg-paper-2 border-b border-rule px-4 sm:px-5 flex flex-wrap items-center justify-between gap-2 z-30 shrink-0">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-accent animate-pulse"></span>
-            <span className="font-display lc text-ink text-xl tracking-tight">
-              Raksha
-            </span>
-          </div>
-          <span className="hidden md:inline text-xs px-2.5 py-0.5 rounded bg-accent-soft text-accent border border-accent/40 font-mono font-bold">
-            TEST RESPONSE OPERATIONS
+      <header className="h-14 px-5 border-b border-rule flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="font-display lc text-2xl text-ink">
+            Raksha <span className="text-ink-3">·</span> operations
           </span>
-          <span className="hidden sm:inline text-xs px-2 py-0.5 rounded bg-warn-soft text-warn border border-warn/40 font-mono text-[11px]">
-            SUPERVISED DEMO
+          <span className="hidden sm:inline">
+            <Chip tone="warn">Supervised demo</Chip>
           </span>
         </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden lg:flex text-xs text-ink-2 items-center gap-1.5">
-            <Car className="w-3.5 h-3.5 text-accent" />
-            <span>Police alerts go to a demo stand-in</span>
-          </div>
-
+        <nav className="flex items-center gap-2">
           <a
             href="/police"
-            className="px-3 py-1.5 rounded-lg bg-danger hover:bg-danger/90 text-danger-ink text-xs font-bold flex items-center gap-1.5 transition-colors"
+            className="label inline-flex items-center gap-2 h-9 px-3 rounded-input border border-danger/40 text-danger text-[10px] hover:border-danger"
           >
             <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Police desk</span>
+            Police desk
           </a>
           <a
             href="/"
-            className="px-3 py-1.5 rounded-lg bg-accent hover:bg-accent/90 text-accent-ink text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            className="label inline-flex items-center gap-2 h-9 px-3 rounded-input border border-rule text-ink text-[10px] hover:border-ink-3"
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span>Citizen app</span>
+            Citizen app
           </a>
-        </div>
+        </nav>
       </header>
 
       {error && (
@@ -216,15 +205,15 @@ function RakshaOpsDashboard() {
               <span className="text-accent font-mono">REAL-TIME</span>
             </div>
 
-            <div className="flex gap-1">
+            <div className="flex border border-rule rounded-input overflow-hidden divide-x divide-rule">
               {["all", "active", "emergency", "resolved"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setFilter(tab)}
-                  className={`flex-1 min-h-[32px] text-[11px] font-bold rounded capitalize transition-colors ${
+                  className={`label flex-1 min-h-[32px] text-[10px] transition-colors ${
                     filter === tab
-                      ? "bg-accent text-accent-ink"
-                      : "bg-paper text-ink-3 hover:text-ink"
+                      ? "bg-ink text-paper"
+                      : "text-ink-3 hover:text-ink"
                   }`}
                 >
                   {tab}
@@ -251,64 +240,43 @@ function RakshaOpsDashboard() {
                 const isCheckin = sess.safetyState === "check_in_pending";
 
                 return (
-                  <div
+                  <button
                     key={sess._id}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") setSelectedSessionId(sess._id);
-                    }}
                     onClick={() => setSelectedSessionId(sess._id)}
-                    className={`p-3 rounded-xl cursor-pointer border transition-all text-xs ${
+                    aria-current={isSelected}
+                    className={`w-full text-left px-3 py-3 border-l-2 border-b border-b-rule transition-colors ${
                       isSelected
-                        ? "bg-paper-3 border-accent/40 shadow-md ring-1 ring-accent/50"
-                        : "bg-paper hover:bg-paper-3/50 border-rule"
+                        ? "border-l-accent bg-paper-3"
+                        : "border-l-transparent hover:bg-paper-3/50"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="font-bold text-ink text-sm flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-accent"></span>
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="text-sm text-ink truncate">
                         {sess.userName}
-                      </div>
-
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                          isAlert
-                            ? "bg-danger-soft text-danger border border-danger/50 animate-pulse"
-                            : isCheckin
-                              ? "bg-warn-soft text-warn border border-warn/40"
-                              : "bg-accent-soft text-accent border border-accent/40"
-                        }`}
+                      </span>
+                      <Chip
+                        tone={isAlert ? "danger" : isCheckin ? "warn" : "muted"}
+                        live={isAlert}
                       >
                         {isAlert
-                          ? "SOS ACTIVE"
+                          ? "SOS"
                           : isCheckin
-                            ? "CHECK-IN"
-                            : sess.callState}
+                            ? "Check-in"
+                            : label(sess.callState)}
+                      </Chip>
+                    </span>
+                    <span className="mt-1.5 flex items-center justify-between gap-2 label text-[10px] text-ink-3">
+                      <span className="truncate">
+                        {sess.locationAddress || "no location"}
                       </span>
-                    </div>
-
-                    <div className="text-ink-2 line-clamp-1 text-[11px] mb-1 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-ink-3 shrink-0" />
-                      <span>
-                        {sess.locationAddress || "Location unavailable"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[10px] text-ink-3 pt-1 border-t border-rule">
-                      <span className="flex items-center gap-1">
-                        <BatteryCharging className="w-3 h-3 text-accent" />
-                        {sess.battery}
-                      </span>
-                      <span>📞 {sess.medium}</span>
-                      <span className="font-mono">
+                      <span className="tabular shrink-0">
                         {new Date(sess.startedAt).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </span>
-                    </div>
-                  </div>
+                    </span>
+                  </button>
                 );
               })
             )}
@@ -382,45 +350,31 @@ function RakshaOpsDashboard() {
                       : "Waiting for the caller to speak…"}
                 </div>
               ) : (
-                transcripts.map((t) => (
-                  <div
-                    key={t._id}
-                    className={`p-2.5 rounded-lg border text-xs leading-relaxed ${
-                      t.speaker === "citizen"
-                        ? "bg-paper-3/80 border-rule text-ink ml-6"
-                        : t.speaker === "assistant"
-                          ? "bg-accent-soft border-accent/40 text-accent mr-6"
-                          : "bg-paper/70 border-rule text-ink-2 italic"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase mb-1">
-                      <span
-                        className={
-                          t.speaker === "citizen" ? "text-warn" : "text-accent"
-                        }
-                      >
-                        {t.speaker === "citizen"
-                          ? `Citizen (${selectedSession?.userName})`
+                <ol>
+                  {transcripts.map((t) => (
+                    <LogLine
+                      key={t._id}
+                      who={
+                        t.speaker === "citizen"
+                          ? "Caller"
                           : t.speaker === "assistant"
-                            ? "Vaani Safety Assistant"
-                            : "Unknown speaker"}
-                      </span>
-                      <span className="text-ink-3 font-mono font-normal">
-                        {new Date(t.timestamp).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          second: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                    <div>
+                            ? "Raksha"
+                            : "Unknown"
+                      }
+                      time={new Date(t.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                      tone={t.speaker === "citizen" ? "warn" : "accent"}
+                    >
                       {t.text}
                       {!t.isFinal && (
                         <span className="ml-1 text-ink-3">(interim)</span>
                       )}
-                    </div>
-                  </div>
-                ))
+                    </LogLine>
+                  ))}
+                </ol>
               )}
             </div>
             {showJump && (
@@ -488,102 +442,85 @@ function RakshaOpsDashboard() {
 
         {/* COLUMN 3: QUICK-ACTION DISPATCH TERMINAL */}
         <section className="w-full xl:w-80 bg-paper-2 border-l border-rule flex flex-col shrink-0 xl:overflow-y-auto custom-scrollbar">
-          {/* Citizen Banner */}
-          <div className="p-4 bg-paper-3 border-b border-rule">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display text-2xl text-ink">
+          <div className="p-4 border-b border-rule">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-display text-2xl text-ink truncate">
                 {selectedSession?.userName ?? "Select a session"}
               </h2>
-              <span
-                className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+              <Chip
+                tone={
                   isEmergency
-                    ? "bg-danger-soft text-danger border border-danger/50"
+                    ? "danger"
                     : isPatrolDispatched
-                      ? "bg-accent-soft text-accent border border-accent/40"
-                      : "bg-paper-3 text-ink-2"
-                }`}
+                      ? "accent"
+                      : "muted"
+                }
+                live={isEmergency}
               >
                 {isEmergency
-                  ? "SOS active"
+                  ? "SOS"
                   : isPatrolDispatched
-                    ? "Police alerted (demo)"
-                    : "Session status"}
-              </span>
-            </div>
-            <p className="text-xs text-ink-2 mt-1">
-              {isEmergency
-                ? "SOS raised — police (demo) alert in progress"
-                : "Check call and monitoring status below"}
-            </p>
-          </div>
-
-          <div className="p-4 text-xs space-y-2">
-            <p>Call: {selectedSession?.callState ?? "—"}</p>
-            <p>Monitoring: {selectedSession?.monitoringState ?? "—"}</p>
-            <p>Incident: {selectedSession?.incident?.state ?? "none"}</p>
-            <p>Check-in: {selectedSession?.view.checkIn?.status ?? "none"}</p>
-            <p>
-              Location captured:{" "}
-              {selectedSession?.location
-                ? new Date(
-                    selectedSession.location.capturedAt,
-                  ).toLocaleTimeString()
-                : "unavailable"}
-            </p>
-          </div>
-          {/* Telemetry Details */}
-          <div className="p-4 border-b border-rule space-y-3 bg-paper">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-ink-3">Last-known location</span>
-              <span
-                className="font-medium text-ink truncate max-w-[190px]"
-                title={selectedSession?.locationAddress}
-              >
-                {selectedSession?.locationAddress || "Location unavailable"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-ink-3">GPS Coordinates</span>
-              <span className="font-mono text-accent text-[11px]">
-                {selectedSession?.location
-                  ? `${selectedSession.location.latitude.toFixed(5)}, ${selectedSession.location.longitude.toFixed(5)} (±${Math.round(selectedSession.location.accuracyM)}m)`
-                  : "Unavailable"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-ink-3">Citizen Phone</span>
-              <span className="font-medium text-accent font-mono">
-                {selectedSession?.userPhone || "Unavailable"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-ink-3">Police contact</span>
-              <span className="font-medium text-ink">
-                Demo stand-in (consenting)
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-ink-3">Device Battery</span>
-              <span className="font-medium text-accent font-mono">
-                {selectedSession?.battery ?? "—"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-ink-3">Police alert</span>
-              <span className="font-bold text-accent">
-                {delivery?.state ?? "Not sent"}
-              </span>
+                    ? "Police alerted"
+                    : "Session"}
+              </Chip>
             </div>
           </div>
-
-          {/* High-Contrast Action Dispatch Buttons */}
-          <div className="p-4 flex-1 flex flex-col justify-end gap-3 bg-paper">
-            {/* 1. DISPATCH PATROL BUTTON */}
+          <div className="p-4 space-y-4 flex-1">
+            <Panel label="Session">
+              <dl>
+                <Row label="Call">
+                  {selectedSession ? label(selectedSession.callState) : "—"}
+                </Row>
+                <Row label="Listening">
+                  {selectedSession
+                    ? label(selectedSession.monitoringState)
+                    : "—"}
+                </Row>
+                <Row label="Incident" tone={isEmergency ? "danger" : "ink"}>
+                  {selectedSession?.incident
+                    ? label(selectedSession.incident.state)
+                    : "none"}
+                </Row>
+                <Row label="Check-in">
+                  {selectedSession?.view.checkIn
+                    ? label(selectedSession.view.checkIn.status)
+                    : "none"}
+                </Row>
+                <Row
+                  label="Police alert"
+                  tone={delivery?.state === "failed" ? "danger" : "ink"}
+                >
+                  {delivery?.state ?? "not sent"}
+                </Row>
+              </dl>
+            </Panel>
+            <Panel label="Caller">
+              <dl>
+                <Row label="Phone">{selectedSession?.userPhone || "—"}</Row>
+                <Row
+                  label="Position"
+                  tone={selectedSession?.location ? "ink" : "muted"}
+                >
+                  {selectedSession?.location
+                    ? `${selectedSession.location.latitude.toFixed(4)}, ${selectedSession.location.longitude.toFixed(4)}`
+                    : "unavailable"}
+                </Row>
+                {selectedSession?.location && (
+                  <Row label="Accuracy">
+                    ±{Math.round(selectedSession.location.accuracyM)} m
+                  </Row>
+                )}
+                <Row
+                  label="Battery"
+                  tone={selectedSession?.view.session.battery ? "ink" : "muted"}
+                >
+                  {selectedSession?.battery ?? "—"}
+                </Row>
+                <Row label="Police">demo stand-in</Row>
+              </dl>
+            </Panel>
+          </div>
+          <div className="p-4 space-y-2 border-t border-rule">
             <button
               onClick={handleDispatch}
               disabled={
@@ -592,48 +529,40 @@ function RakshaOpsDashboard() {
                 selectedSession.ended ||
                 isPatrolDispatched
               }
-              className={`w-full py-4 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-xl border transition-all ${
-                isPatrolDispatched
-                  ? "bg-accent-soft text-accent border-accent/40 opacity-90 cursor-default"
-                  : "bg-accent hover:bg-accent/90 active:scale-[0.98] text-accent-ink border-accent/40"
-              }`}
+              className={`${btn.primary} w-full disabled:bg-paper-3 disabled:text-ink-3 disabled:opacity-100`}
             >
               <Zap className="w-5 h-5" />
-              <span>
-                {isPatrolDispatched
-                  ? `POLICE (DEMO): ${delivery?.state.toUpperCase()}`
-                  : "ALERT POLICE (DEMO)"}
-              </span>
+              {isPatrolDispatched
+                ? `police · ${delivery?.state}`
+                : "alert police (demo)"}
             </button>
-
-            {/* 2. TRIGGER SAFETY CHECK-IN */}
             <button
               disabled={busy || !selectedSession || selectedSession.ended}
               onClick={handleCheckIn}
-              className="w-full py-3 px-4 rounded-xl bg-warn-soft hover:bg-warn-soft/80 active:scale-[0.98] text-warn font-semibold text-xs flex items-center justify-center gap-2 border border-warn/40 transition-all"
+              className={`${btn.outline} w-full border-warn/50 text-warn`}
             >
-              <Timer className="w-4 h-4 text-warn" />
-              <span>Trigger 30s Safety Check-In</span>
+              <Timer className="w-4 h-4" />
+              Start 30 s safety check-in
             </button>
-
-            {/* 3. MARK SAFE / RESOLVE */}
-            <div className="pt-2 text-center">
-              <button
-                disabled={
-                  busy ||
-                  !selectedSession?.incident ||
-                  selectedSession.incident.state === "resolved"
-                }
-                onClick={handleResolve}
-                className="min-h-[40px] text-xs text-ink-3 hover:text-ink disabled:opacity-40 transition-colors inline-flex items-center gap-1.5"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
-                <span>Resolve test incident (reason required)</span>
-              </button>
-            </div>
+            <button
+              disabled={
+                busy ||
+                !selectedSession?.incident ||
+                selectedSession.incident.state === "resolved"
+              }
+              onClick={handleResolve}
+              className={`${btn.quiet} w-full`}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Resolve incident…
+            </button>
           </div>
         </section>
       </div>
     </div>
   );
+}
+
+function label(state: string) {
+  return state.replaceAll("_", " ");
 }

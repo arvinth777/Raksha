@@ -7,6 +7,7 @@ import { ConvexError } from "convex/values";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { VoiceCall } from "../../components/VoiceCall";
+import { Chip, LogLine, Panel, Row, btn } from "../../components/ui";
 // Leaflet touches window, so the map only renders in the browser.
 const TacticalMap = dynamic(() => import("../../components/TacticalMap"), {
   ssr: false,
@@ -80,218 +81,301 @@ function PoliceDesk() {
     if (el && pinned.current) el.scrollTop = el.scrollHeight;
   }, [lines.length, lines.at(-1)?.text, alert?.session._id]);
 
+  const time = (t: number) =>
+    new Date(t).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
   return (
     <div
       data-theme="night"
       className="flex-1 flex flex-col bg-paper text-ink font-sans md:flex-none md:h-[calc(100dvh-2rem)] md:overflow-hidden"
     >
-      <header className="shrink-0 px-4 py-2.5 bg-paper-2 border-b border-rule flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Siren className="w-5 h-5 text-danger" />
-          <h1 className="font-display lc text-2xl">raksha · police desk</h1>
-          <span className="text-[11px] px-2 py-0.5 rounded bg-warn-soft text-warn border border-warn/40 font-mono">
-            DEMO STAND-IN
-          </span>
+      <header className="shrink-0 px-5 h-14 border-b border-rule flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <h1 className="font-display lc text-2xl text-ink truncate">
+            Raksha <span className="text-ink-3">·</span> police desk
+          </h1>
+          <Chip tone="warn">Demo stand-in</Chip>
         </div>
-        <p className="text-xs text-ink-3">
-          No real emergency service is contacted from this prototype.
+        <p className="hidden md:block label text-[10px] text-ink-3">
+          No real emergency service is contacted
         </p>
       </header>
 
       {error && (
         <p
           role="alert"
-          className="shrink-0 bg-danger-soft text-danger px-4 py-2 text-sm"
+          className="shrink-0 border-l-2 border-danger mx-5 mt-3 pl-3 text-sm text-danger"
         >
           {error}
         </p>
       )}
 
-      <div className="flex-1 min-h-0 grid gap-3 p-3 md:grid-rows-[minmax(0,1fr)] md:grid-cols-[180px_minmax(0,1fr)_250px] lg:grid-cols-[240px_minmax(0,1fr)_340px]">
+      <div className="flex-1 min-h-0 grid gap-px bg-rule md:grid-rows-[minmax(0,1fr)] md:grid-cols-[220px_minmax(0,1fr)_300px] lg:grid-cols-[260px_minmax(0,1fr)_340px]">
         {/* Alerts */}
         <aside
           aria-label="Alerts"
-          className="flex flex-col gap-2 min-h-0 max-h-56 overflow-y-auto md:max-h-none"
+          className="bg-paper flex flex-col min-h-0 max-h-60 md:max-h-none"
         >
-          <h2 className="text-xs font-bold uppercase tracking-wider text-ink-3">
-            Active alerts ({alerts.length})
-          </h2>
-          {views === undefined ? (
-            <p className="text-sm text-ink-3">Loading…</p>
-          ) : alerts.length === 0 ? (
-            <p className="text-sm text-ink-3 border border-rule rounded-xl p-4">
-              No active alerts. This page updates by itself when a Raksha user
-              sends SOS.
-            </p>
-          ) : (
-            alerts.map((a) => (
-              <button
-                key={a.session._id}
-                onClick={() => setSelectedId(a.session._id)}
-                aria-current={a === alert}
-                className={`w-full text-left min-h-[44px] p-3 rounded-xl border text-sm ${
-                  a === alert
-                    ? "border-danger bg-danger-soft"
-                    : "border-rule bg-paper-2 hover:bg-paper-3/60"
-                }`}
-              >
-                <div className="flex justify-between gap-2">
-                  <span className="font-semibold truncate">
-                    {a.incident!.reason}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold uppercase shrink-0 ${
-                      a.incident!.state === "open"
-                        ? "text-danger"
-                        : "text-accent"
-                    }`}
-                  >
-                    {a.incident!.state === "open" ? "New" : "Ack'd"}
-                  </span>
-                </div>
-                <span className="text-xs text-ink-3">
-                  {ago(a.incident!.createdAt, now)}
-                </span>
-              </button>
-            ))
-          )}
+          <p className="label text-[10px] text-ink-3 px-4 pt-4 pb-2">
+            Alerts · {alerts.length}
+          </p>
+          <ul className="flex-1 overflow-y-auto">
+            {views === undefined ? (
+              <li className="px-4 text-sm text-ink-3">Loading…</li>
+            ) : alerts.length === 0 ? (
+              <li className="px-4 text-sm text-ink-3">
+                None in the last 2 hours.
+              </li>
+            ) : (
+              alerts.map((a) => {
+                const isNew = a.incident!.state === "open";
+                const selected = a === alert;
+                return (
+                  <li key={a.session._id}>
+                    <button
+                      onClick={() => setSelectedId(a.session._id)}
+                      aria-current={selected}
+                      className={`w-full text-left px-4 py-3 border-l-2 border-b border-b-rule transition-colors ${
+                        selected
+                          ? "border-l-accent bg-paper-2"
+                          : "border-l-transparent hover:bg-paper-2/60"
+                      }`}
+                    >
+                      <span className="flex items-center justify-between gap-2">
+                        <Chip tone={isNew ? "danger" : "safe"} live={isNew}>
+                          {isNew ? "New" : "Ack'd"}
+                        </Chip>
+                        <span className="label text-[10px] text-ink-3 tabular">
+                          {ago(a.incident!.createdAt, now)}
+                        </span>
+                      </span>
+                      <span className="block mt-2 text-sm text-ink-2 line-clamp-2">
+                        {a.incident!.reason}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })
+            )}
+          </ul>
         </aside>
 
-        {/* Alert headline + live transcript (main panel) */}
         {alert ? (
-          <main className="flex flex-col gap-3 min-w-0 min-h-[420px] md:min-h-0">
-            <section
-              className={`shrink-0 rounded-2xl border px-4 py-3 ${
-                alert.incident!.state === "open"
-                  ? "border-danger bg-danger-soft"
-                  : "border-rule bg-paper-2"
-              }`}
-            >
-              <p className="text-[11px] font-bold uppercase tracking-wider text-danger flex items-center gap-1.5">
-                <Siren className="w-3.5 h-3.5" />
-                {alert.incident!.state === "open"
-                  ? "Incoming SOS alert"
-                  : `Alert ${alert.incident!.state.replaceAll("_", " ")}`}
-              </p>
-              <h2 className="text-xl font-bold break-words">
-                {alert.incident!.reason}
-              </h2>
-              <p className="text-sm text-ink-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <>
+            {/* Headline + live transcript */}
+            <main className="bg-paper flex flex-col min-w-0 min-h-[440px] md:min-h-0">
+              <section className="shrink-0 px-6 pt-5 pb-4 border-b border-rule">
+                <p className="label text-[10px] text-danger flex items-center gap-2">
+                  <Siren className="w-3.5 h-3.5" />
+                  {alert.incident!.state === "open"
+                    ? "Incoming SOS"
+                    : `Alert ${alert.incident!.state.replaceAll("_", " ")}`}
+                  <span className="text-ink-3 tabular">
+                    · {time(alert.incident!.createdAt)}
+                  </span>
+                </p>
+                <h2 className="font-display text-2xl lg:text-3xl leading-tight mt-2 break-words line-clamp-3">
+                  {alert.incident!.reason}
+                </h2>
                 {who && (
-                  <span>
-                    <span className="font-semibold text-ink">{who.name}</span> ·{" "}
+                  <p className="mt-2 text-sm text-ink-2 flex flex-wrap gap-x-4 gap-y-1">
+                    <span>{who.name}</span>
                     <a
-                      className="underline font-mono"
+                      className="font-mono tabular text-accent hover:underline"
                       href={`tel:${who.phone.replaceAll(" ", "")}`}
                     >
                       {who.phone}
                     </a>
-                  </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  {new Date(alert.incident!.createdAt).toLocaleTimeString()} (
-                  {ago(alert.incident!.createdAt, now)})
-                </span>
-              </p>
-            </section>
-
-            <section
-              aria-label="Live call transcript"
-              className="relative flex-1 min-h-0 flex flex-col rounded-2xl border border-rule bg-paper-2 overflow-hidden"
-            >
-              <div className="shrink-0 px-4 py-2.5 border-b border-rule flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-1.5">
-                  <MessageSquareQuote className="w-4 h-4" /> Live call
-                  transcript
-                </h3>
-                <span
-                  className={`text-[11px] font-bold flex items-center gap-1.5 ${
-                    live ? "text-danger" : "text-ink-3"
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${live ? "bg-danger animate-pulse" : "bg-ink-3"}`}
-                  />
-                  {live
-                    ? "LIVE"
-                    : alert.session.ended
-                      ? "Call ended"
-                      : label(alert.session.callState)}
-                </span>
-              </div>
-              <div
-                ref={feed}
-                onScroll={(e) => {
-                  const el = e.currentTarget;
-                  pinned.current =
-                    el.scrollHeight - el.scrollTop - el.clientHeight < 40;
-                  setShowJump(!pinned.current);
-                }}
-                className="flex-1 overflow-y-auto p-4 space-y-2.5"
-              >
-                {lines.length === 0 ? (
-                  <p className="text-sm text-ink-3 text-center py-8">
-                    {alert.session.mode === "live"
-                      ? "Phone-call captions are not available yet; use the details on the right."
-                      : "Waiting for the caller to speak…"}
+                    <span className="text-ink-3">
+                      raised {ago(alert.incident!.createdAt, now)}
+                    </span>
                   </p>
-                ) : (
-                  lines.map((t) => (
-                    <div
-                      key={t._id}
-                      className={`max-w-[85%] rounded-xl border px-3 py-2 ${
-                        t.speaker === "user"
-                          ? "ml-auto bg-warn-soft border-warn/40"
-                          : t.speaker === "agent"
-                            ? "bg-accent-soft border-accent/40"
-                            : "bg-paper-2 border-rule italic"
-                      }`}
-                    >
-                      <div className="flex justify-between gap-3 text-[10px] font-bold uppercase mb-0.5">
-                        <span
-                          className={
-                            t.speaker === "user" ? "text-warn" : "text-accent"
-                          }
-                        >
-                          {t.speaker === "user"
-                            ? `Caller${who ? ` · ${who.name}` : ""}`
+                )}
+              </section>
+
+              <section
+                aria-label="Live call transcript"
+                className="relative flex-1 min-h-0 flex flex-col"
+              >
+                <div className="shrink-0 px-6 pt-4 pb-2 flex items-center justify-between">
+                  <p className="label text-[10px] text-ink-3">
+                    Live call transcript
+                  </p>
+                  <Chip tone={live ? "danger" : "muted"} live={live}>
+                    {live
+                      ? "Live"
+                      : alert.session.ended
+                        ? "Call ended"
+                        : label(alert.session.callState)}
+                  </Chip>
+                </div>
+                <ol
+                  ref={feed as unknown as React.RefObject<HTMLOListElement>}
+                  onScroll={(e) => {
+                    const el = e.currentTarget;
+                    pinned.current =
+                      el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+                    setShowJump(!pinned.current);
+                  }}
+                  className="flex-1 overflow-y-auto px-6 pb-4"
+                >
+                  {lines.length === 0 ? (
+                    <li className="text-sm text-ink-3 py-6">
+                      {alert.session.mode === "live"
+                        ? "Phone-call captions appear here when available; the briefing on the right has the details."
+                        : "Waiting for the caller to speak…"}
+                    </li>
+                  ) : (
+                    lines.map((t) => (
+                      <LogLine
+                        key={t._id}
+                        who={
+                          t.speaker === "user"
+                            ? "Caller"
                             : t.speaker === "agent"
                               ? "Raksha"
-                              : "Unknown speaker"}
-                        </span>
-                        <span className="font-mono font-normal text-ink-3">
-                          {new Date(t.timestamp).toLocaleTimeString()}
-                        </span>
-                      </div>
-                      <p className="text-sm leading-relaxed">
+                              : "Unknown"
+                        }
+                        time={new Date(t.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        })}
+                        tone={t.speaker === "user" ? "warn" : "accent"}
+                      >
                         {t.text}
                         {!t.isFinal && (
                           <span className="ml-1 text-ink-3">(interim)</span>
                         )}
-                      </p>
-                    </div>
-                  ))
+                      </LogLine>
+                    ))
+                  )}
+                </ol>
+                {showJump && (
+                  <button
+                    onClick={() => {
+                      pinned.current = true;
+                      setShowJump(false);
+                      feed.current?.scrollTo({
+                        top: feed.current.scrollHeight,
+                      });
+                    }}
+                    className="label absolute bottom-4 right-6 h-8 px-3 rounded-full bg-accent text-accent-ink text-[10px]"
+                  >
+                    Jump to live
+                  </button>
                 )}
-              </div>
-              {showJump && (
-                <button
-                  onClick={() => {
-                    pinned.current = true;
-                    setShowJump(false);
-                    feed.current?.scrollTo({ top: feed.current.scrollHeight });
-                  }}
-                  className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-danger text-danger-ink text-xs font-bold shadow"
-                >
-                  Jump to live
-                </button>
+              </section>
+            </main>
+
+            {/* Location, briefing, acknowledge */}
+            <aside
+              aria-label="Alert details"
+              className="bg-paper flex flex-col min-h-0 md:overflow-y-auto"
+            >
+              {loc && (
+                <div className="h-40 lg:h-48 relative overflow-hidden border-b border-rule">
+                  <TacticalMap
+                    latitude={loc.latitude}
+                    longitude={loc.longitude}
+                    accuracyM={loc.accuracyM}
+                    citizenName={who?.name ?? "Caller"}
+                    isEmergency={alert.incident!.state === "open"}
+                  />
+                </div>
               )}
-            </section>
-          </main>
+              <div className="p-4 space-y-4">
+                <Panel label="Location">
+                  <dl>
+                    <Row label="Position" tone={loc ? "ink" : "muted"}>
+                      {loc
+                        ? `${loc.latitude.toFixed(5)}, ${loc.longitude.toFixed(5)}`
+                        : "unavailable"}
+                    </Row>
+                    {loc && (
+                      <Row label="Accuracy">±{Math.round(loc.accuracyM)} m</Row>
+                    )}
+                    {loc && (
+                      <Row label="Captured">{ago(loc.capturedAt, now)}</Row>
+                    )}
+                    <Row
+                      label="Battery"
+                      tone={alert.session.battery ? "ink" : "muted"}
+                    >
+                      {alert.session.battery
+                        ? `${Math.round(alert.session.battery.level * 100)}%`
+                        : "unknown"}
+                    </Row>
+                  </dl>
+                  {loc && (
+                    <a
+                      href={`https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="label inline-flex items-center gap-1 min-h-[36px] text-[10px] text-accent hover:underline"
+                    >
+                      Open in maps <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </Panel>
+
+                <Panel label="Voice briefing">
+                  {alert.session.mode === "demo" ? (
+                    <p className="text-sm text-ink-3 py-1">
+                      Typed demo session: no voice call.
+                    </p>
+                  ) : responder?.state === "failed" ? (
+                    <p className="text-sm text-danger py-1">
+                      The voice briefing could not be placed.
+                    </p>
+                  ) : (
+                    <VoiceCall
+                      sessionId={alert.session._id}
+                      purpose="responder"
+                      autoJoin={false}
+                      joinLabel="Answer Raksha's call"
+                    />
+                  )}
+                  <dl className="mt-2">
+                    <Row
+                      label="Delivery"
+                      tone={responder?.state === "failed" ? "danger" : "ink"}
+                    >
+                      {responder?.state ?? "not started"}
+                    </Row>
+                  </dl>
+                </Panel>
+
+                <button
+                  disabled={alert.incident!.state !== "open"}
+                  onClick={() => {
+                    setError("");
+                    acknowledge({ incidentId: alert.incident!._id }).catch(
+                      (e) =>
+                        setError(
+                          e instanceof ConvexError
+                            ? String(e.data)
+                            : "Acknowledgement not saved. Try again.",
+                        ),
+                    );
+                  }}
+                  className={`${btn.primary} w-full min-h-[56px] disabled:bg-paper-3 disabled:text-ink-3 disabled:opacity-100`}
+                >
+                  <BadgeCheck className="w-5 h-5" />
+                  {alert.incident!.state === "open"
+                    ? "acknowledge alert"
+                    : "alert acknowledged"}
+                </button>
+              </div>
+            </aside>
+          </>
         ) : (
           <section
             aria-label="Standing by"
-            className="md:col-span-2 flex flex-col items-center justify-center gap-6 rounded-2xl border border-rule min-h-[360px]"
+            className="bg-paper md:col-span-2 flex flex-col items-center justify-center gap-6 min-h-[360px]"
           >
             <svg
               aria-hidden
@@ -324,108 +408,11 @@ function PoliceDesk() {
             </svg>
             <div className="text-center space-y-2">
               <h2 className="font-display lc text-4xl text-ink">standing by</h2>
-              <p className="label text-[11px] text-ink-3">
+              <p className="label text-[10px] text-ink-3">
                 Listening for SOS · alerts appear here instantly
               </p>
             </div>
           </section>
-        )}
-
-        {/* Location, briefing, acknowledge */}
-        {alert && (
-          <aside
-            aria-label="Alert details"
-            className="flex flex-col gap-3 min-h-0 md:overflow-y-auto"
-          >
-            <section className="rounded-2xl border border-rule bg-paper-2 overflow-hidden">
-              {loc && (
-                <div className="h-36 lg:h-44 relative overflow-hidden">
-                  <TacticalMap
-                    latitude={loc.latitude}
-                    longitude={loc.longitude}
-                    accuracyM={loc.accuracyM}
-                    citizenName={who?.name ?? "Caller"}
-                    isEmergency={alert.incident!.state === "open"}
-                  />
-                </div>
-              )}
-              <div className="p-4 space-y-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-3 flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4" /> Last known location
-                </h3>
-                {loc ? (
-                  <>
-                    <p className="font-mono text-sm">
-                      {loc.latitude.toFixed(5)}, {loc.longitude.toFixed(5)}
-                    </p>
-                    <p className="text-xs text-ink-3">
-                      ±{Math.round(loc.accuracyM)} m ·{" "}
-                      {ago(loc.capturedAt, now)}
-                      {alert.session.battery &&
-                        ` · battery ${Math.round(alert.session.battery.level * 100)}%`}
-                    </p>
-                    <a
-                      href={`https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 min-h-[40px] text-sm text-accent underline"
-                    >
-                      Open in Maps <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </>
-                ) : (
-                  <p className="text-sm text-ink-3">
-                    Unavailable: no location shared.
-                  </p>
-                )}
-              </div>
-            </section>
-
-            <section className="rounded-2xl border border-rule bg-paper-2 p-4 space-y-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-ink-3">
-                Raksha voice briefing
-              </h3>
-              {alert.session.mode === "demo" ? (
-                <p className="text-sm text-ink-3">
-                  Typed demo session: no voice call.
-                </p>
-              ) : responder?.state === "failed" ? (
-                <p className="text-sm text-danger">
-                  The voice briefing could not be placed.
-                </p>
-              ) : (
-                <VoiceCall
-                  sessionId={alert.session._id}
-                  purpose="responder"
-                  autoJoin={false}
-                  joinLabel="Answer Raksha's call"
-                />
-              )}
-              <p className="text-xs text-ink-3">
-                Delivery: {responder?.state ?? "not started"}
-              </p>
-            </section>
-
-            <button
-              disabled={alert.incident!.state !== "open"}
-              onClick={() => {
-                setError("");
-                acknowledge({ incidentId: alert.incident!._id }).catch((e) =>
-                  setError(
-                    e instanceof ConvexError
-                      ? String(e.data)
-                      : "Acknowledgement not saved. Try again.",
-                  ),
-                );
-              }}
-              className="shrink-0 w-full min-h-[52px] rounded-2xl bg-accent text-accent-ink hover:bg-accent/90 disabled:bg-paper-3 disabled:text-ink-3 font-bold flex items-center justify-center gap-2"
-            >
-              <BadgeCheck className="w-5 h-5" />
-              {alert.incident!.state === "open"
-                ? "Acknowledge alert"
-                : "Alert acknowledged"}
-            </button>
-          </aside>
         )}
       </div>
     </div>

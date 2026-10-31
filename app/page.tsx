@@ -5,6 +5,7 @@ import { useMutation, useQuery, useAction } from "convex/react";
 import { ConvexError } from "convex/values";
 import { VoiceCall } from "../components/VoiceCall";
 import { Readiness } from "../components/Readiness";
+import { Chip, LogLine, Panel, Row, btn } from "../components/ui";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import {
@@ -280,55 +281,51 @@ export default function RakshaUserApp() {
         : { text: "Connecting", tone: "live" as const };
   const lastLines = (transcripts ?? []).slice(-4);
   const modes = [
-    { value: "demo", label: "Typed demo", hint: "Type what you'd say" },
-    { value: "web", label: "In-app call", hint: "Talk right here" },
-    { value: "live", label: "Phone call", hint: "Raksha rings your phone" },
+    { value: "demo", label: "Typed", hint: "type what you'd say" },
+    { value: "web", label: "In-app", hint: "talk right here" },
+    { value: "live", label: "Phone", hint: "raksha rings your phone" },
   ] as const;
+  const chipTone =
+    status.tone === "danger"
+      ? "danger"
+      : status.tone === "live"
+        ? "accent"
+        : "muted";
+  const sayDemo = (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = speech;
+    void perform(async () => {
+      await demoSay({ sessionId: session!._id, text });
+      setSpeech("");
+    });
+  };
   return (
     <div className="flex-1 flex flex-col items-center bg-paper text-ink">
       <div className="w-full max-w-md flex-1 flex flex-col">
-        {/* Header */}
         <header className="sticky top-0 z-40 h-14 px-5 flex items-center justify-between bg-paper/90 backdrop-blur-md border-b border-rule">
           <span className="font-display lc text-2xl tracking-tight text-accent">
             Raksha
           </span>
           <div className="flex items-center gap-3">
-            <span
-              role="status"
-              className={`inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium ${
-                status.tone === "danger"
-                  ? "bg-danger text-danger-ink"
-                  : status.tone === "live"
-                    ? "bg-accent-soft text-accent"
-                    : "bg-paper-2 text-ink-2"
-              }`}
-            >
-              <span
-                aria-hidden
-                className={`w-1.5 h-1.5 rounded-full ${
-                  status.tone === "danger"
-                    ? "bg-danger-ink"
-                    : status.tone === "live"
-                      ? "bg-accent animate-pulse"
-                      : "bg-ink-3"
-                }`}
-              />
-              {status.text}
+            <span role="status">
+              <Chip tone={chipTone} live={status.tone !== "idle"}>
+                {status.text}
+              </Chip>
             </span>
             <a
               href="/ops"
-              className="text-xs text-ink-3 hover:text-ink underline-offset-2 hover:underline"
+              className="label text-[10px] text-ink-3 hover:text-ink"
             >
               Ops
             </a>
           </div>
         </header>
 
-        <main className="flex-1 flex flex-col gap-6 px-5 pt-6 pb-8">
+        <main className="flex-1 flex flex-col gap-6 px-5 pt-7 pb-8">
           {error && (
             <p
               role="alert"
-              className="flex gap-2 items-start rounded-input bg-danger-soft text-danger px-3.5 py-3 text-sm"
+              className="flex gap-2 items-start border-l-2 border-danger pl-3 py-1 text-sm text-danger"
             >
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               {error}
@@ -337,15 +334,59 @@ export default function RakshaUserApp() {
 
           {!isSessionActive ? (
             <>
-              <section className="space-y-2">
-                <p className="text-sm text-ink-3">Hi {firstName}</p>
-                <h1 className="font-display lc text-5xl leading-[1] text-ink">
-                  Feeling unsafe?
+              <section className="space-y-3">
+                <p className="label text-[10px] text-ink-3">Hi {firstName}</p>
+                <h1 className="font-display lc text-5xl leading-[0.95] text-ink">
+                  Feeling <span className="text-accent">unsafe</span>?
                 </h1>
                 <p className="text-ink-2 leading-relaxed">
                   Raksha stays on the line with you, listens for danger, and can
                   alert your police contact.
                 </p>
+              </section>
+
+              <section className="space-y-3">
+                <fieldset className="grid grid-cols-3 border border-rule rounded-input overflow-hidden divide-x divide-rule">
+                  <legend className="sr-only">
+                    How should Raksha reach you?
+                  </legend>
+                  {modes.map((m) => (
+                    <label
+                      key={m.value}
+                      className="label text-[10px] min-h-[44px] grid place-items-center cursor-pointer text-ink-3 transition-colors duration-150 has-[:checked]:bg-ink has-[:checked]:text-paper has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed"
+                    >
+                      <input
+                        type="radio"
+                        name="callMode"
+                        value={m.value}
+                        disabled={m.value !== "demo" && !me?.liveEnabled}
+                        checked={callMode === m.value}
+                        onChange={() => setCallMode(m.value)}
+                        className="sr-only"
+                      />
+                      {m.label}
+                    </label>
+                  ))}
+                </fieldset>
+                <button
+                  id="heroComfortBtn"
+                  onClick={handleFeelingUnsafe}
+                  disabled={busy}
+                  className={`${btn.primary} w-full min-h-[64px] justify-between text-2xl`}
+                >
+                  <span>{busy ? "starting…" : "talk to raksha"}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="label text-[10px] text-accent-ink/70 font-sans">
+                      {modes.find((m) => m.value === callMode)?.hint}
+                    </span>
+                    <PhoneCall className="w-5 h-5" />
+                  </span>
+                </button>
+                {!me?.liveEnabled && (
+                  <p className="text-xs text-ink-3">
+                    Real calls need an operator sign-in.
+                  </p>
+                )}
               </section>
 
               <Readiness
@@ -367,122 +408,36 @@ export default function RakshaUserApp() {
                         ? "shared"
                         : geoPermissionState === "denied"
                           ? "blocked"
-                          : "not shared",
+                          : isLocating
+                            ? "locating…"
+                            : "not shared",
                     ok: geoPermissionState === "granted",
+                    onPress:
+                      geoPermissionState === "granted"
+                        ? undefined
+                        : requestLocation,
+                    hint:
+                      geoPermissionState === "granted"
+                        ? undefined
+                        : "Tap to share",
                   },
                   { label: "Police", value: "stand-in ready", ok: true },
                   {
                     label: "Check-ins",
                     value: autoEscalate ? "alert if missed" : "listen only",
                     ok: autoEscalate,
+                    onPress: () => setAutoEscalate((v) => !v),
+                    hint: "Tap to change",
                   },
                 ]}
               />
-              <section className="space-y-3">
-                <button
-                  id="heroComfortBtn"
-                  onClick={handleFeelingUnsafe}
-                  disabled={busy}
-                  className="group w-full min-h-[112px] rounded-card bg-accent text-accent-ink px-6 py-5 flex items-center justify-between gap-4 text-left transition-[transform,background-color] duration-150 ease-out hover:bg-accent/90 active:translate-y-px disabled:opacity-70"
-                >
-                  <span>
-                    <span className="block font-display lc text-3xl">
-                      {busy ? "Starting…" : "Talk to Raksha"}
-                    </span>
-                    <span className="block text-sm text-accent-ink/75 mt-1">
-                      {modes.find((m) => m.value === callMode)?.hint}
-                    </span>
-                  </span>
-                  <span className="w-12 h-12 shrink-0 rounded-full bg-accent-ink/15 grid place-items-center">
-                    <PhoneCall className="w-5 h-5" />
-                  </span>
-                </button>
-
-                <fieldset className="grid grid-cols-3 gap-1 p-1 rounded-input bg-paper-2">
-                  <legend className="sr-only">
-                    How should Raksha reach you?
-                  </legend>
-                  {modes.map((m) => (
-                    <label
-                      key={m.value}
-                      className="min-h-[44px] grid place-items-center rounded-[9px] text-xs font-medium text-ink-2 cursor-pointer transition-colors duration-150 ease-out has-[:checked]:bg-paper has-[:checked]:text-ink has-[:checked]:shadow-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed"
-                    >
-                      <input
-                        type="radio"
-                        name="callMode"
-                        value={m.value}
-                        disabled={m.value !== "demo" && !me?.liveEnabled}
-                        checked={callMode === m.value}
-                        onChange={() => setCallMode(m.value)}
-                        className="sr-only"
-                      />
-                      {m.label}
-                    </label>
-                  ))}
-                </fieldset>
-                {!me?.liveEnabled && (
-                  <p className="text-xs text-ink-3">
-                    Real calls need an operator sign-in.
-                  </p>
-                )}
-              </section>
-
-              <section
-                aria-label="Preparedness"
-                className="rounded-card border border-rule divide-y divide-rule"
-              >
-                <div className="flex items-center justify-between gap-3 px-4 py-3">
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <MapPin className="w-4 h-4 text-ink-3 shrink-0" />
-                    <span className="min-w-0">
-                      <span className="block text-sm">Location</span>
-                      <span className="block text-xs text-ink-3 font-mono truncate">
-                        {geoPermissionState === "granted"
-                          ? currentAddress
-                          : geoPermissionState === "denied"
-                            ? "Blocked in browser settings"
-                            : "Not shared"}
-                      </span>
-                    </span>
-                  </span>
-                  {geoPermissionState !== "granted" && (
-                    <button
-                      onClick={requestLocation}
-                      disabled={isLocating}
-                      className="shrink-0 min-h-[40px] px-3.5 rounded-full border border-rule text-sm font-medium hover:bg-paper-2 disabled:opacity-60"
-                    >
-                      {isLocating ? "Locating…" : "Share"}
-                    </button>
-                  )}
-                </div>
-                <label className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer">
-                  <span className="flex items-center gap-2.5">
-                    <Timer className="w-4 h-4 text-ink-3 shrink-0" />
-                    <span>
-                      <span className="block text-sm">
-                        Alert police if I miss a check-in
-                      </span>
-                      <span className="block text-xs text-ink-3">
-                        30 seconds to answer “Are you feeling safe?”
-                      </span>
-                    </span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={autoEscalate}
-                    disabled={!!isSessionActive}
-                    onChange={(e) => setAutoEscalate(e.target.checked)}
-                    className="w-5 h-5 shrink-0 accent-[oklch(var(--c-accent))]"
-                  />
-                </label>
-              </section>
             </>
           ) : (
             <>
               <section className="space-y-2">
-                <p className="text-sm text-ink-3">
+                <p className="label text-[10px] text-ink-3">
                   {session?.mode === "demo"
-                    ? "Typed demo session"
+                    ? "Typed demo"
                     : session?.mode === "web"
                       ? "In-app call"
                       : "Phone call"}
@@ -509,119 +464,96 @@ export default function RakshaUserApp() {
                 </p>
               </section>
 
-              <section className="rounded-card bg-paper-2 p-4 space-y-4">
-                {session?.mode === "web" && (
+              <Panel
+                label="Live transcript"
+                action={
+                  <button
+                    onClick={() => setShowTranscript((v) => !v)}
+                    aria-expanded={showTranscript}
+                    className="label text-[10px] text-accent hover:underline"
+                  >
+                    {showTranscript ? "Hide" : "Show"}
+                  </button>
+                }
+              >
+                {showTranscript && (
+                  <ol aria-live="polite">
+                    {lastLines.length === 0 ? (
+                      <li className="text-sm text-ink-3 py-1.5">
+                        Listening… your words appear here as Raksha hears them.
+                      </li>
+                    ) : (
+                      lastLines.map((t) => (
+                        <LogLine
+                          key={t._id}
+                          who={
+                            t.speaker === "user"
+                              ? "You"
+                              : t.speaker === "agent"
+                                ? "Raksha"
+                                : "?"
+                          }
+                          tone={t.speaker === "agent" ? "accent" : "ink"}
+                        >
+                          {t.text}
+                        </LogLine>
+                      ))
+                    )}
+                  </ol>
+                )}
+              </Panel>
+              {session?.mode === "web" && (
+                <Panel label="Call">
                   <VoiceCall sessionId={session._id} purpose="user" autoJoin />
-                )}
-                {session?.mode === "live" && (
-                  <p className="text-sm text-ink-2">
-                    Raksha is calling your phone. Answer it in your normal
-                    dialer.
-                  </p>
-                )}
-                {session?.mode === "demo" && (
-                  <form
-                    className="flex gap-2"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const text = speech;
-                      void perform(async () => {
-                        await demoSay({ sessionId: session._id, text });
-                        setSpeech("");
-                      });
-                    }}
+                </Panel>
+              )}
+              {session?.mode === "live" && !callFailed && (
+                <p className="text-sm text-ink-2 border-l-2 border-accent pl-3">
+                  Raksha is calling your phone. Answer it in your normal dialer.
+                </p>
+              )}
+              {session?.mode === "demo" && (
+                <form className="flex gap-2" onSubmit={sayDemo}>
+                  <label className="sr-only" htmlFor="demoSpeech">
+                    Demo speech
+                  </label>
+                  <input
+                    id="demoSpeech"
+                    value={speech}
+                    onChange={(e) => setSpeech(e.target.value)}
+                    placeholder="Type what you'd say on the call"
+                    className="flex-1 min-w-0 min-h-[48px] rounded-input bg-paper border border-rule px-3.5 text-sm placeholder:text-ink-3 focus:border-accent outline-none"
+                  />
+                  <button
+                    disabled={busy || !speech.trim()}
+                    className={`${btn.outline} min-h-[48px]`}
                   >
-                    <label className="sr-only" htmlFor="demoSpeech">
-                      Demo speech
-                    </label>
-                    <input
-                      id="demoSpeech"
-                      value={speech}
-                      onChange={(e) => setSpeech(e.target.value)}
-                      placeholder="Type what you'd say on the call"
-                      className="flex-1 min-w-0 min-h-[44px] rounded-input bg-paper border border-rule px-3.5 text-sm placeholder:text-ink-3"
-                    />
-                    <button
-                      disabled={busy || !speech.trim()}
-                      className="min-h-[44px] px-4 rounded-input bg-accent text-accent-ink text-sm font-semibold disabled:opacity-40"
-                    >
-                      Say
-                    </button>
-                  </form>
-                )}
+                    Say
+                  </button>
+                </form>
+              )}
 
-                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                  <dt className="text-ink-3">Call</dt>
-                  <dd className="font-mono text-xs self-center">
-                    {label(session!.callState)}
-                  </dd>
-                  <dt className="text-ink-3">Listening</dt>
-                  <dd className="font-mono text-xs self-center">
-                    {label(session!.monitoringState)}
-                  </dd>
-                  <dt className="text-ink-3">Police contact</dt>
-                  <dd
-                    className={`font-mono text-xs self-center ${police ? "text-danger" : ""}`}
-                  >
+              <Panel label="Status">
+                <dl>
+                  <Row label="Call">{label(session!.callState)}</Row>
+                  <Row label="Listening">{label(session!.monitoringState)}</Row>
+                  <Row label="Police" tone={police ? "danger" : "muted"}>
                     {police ? label(police.state) : "not alerted"}
-                  </dd>
-                  <dt className="text-ink-3">Location</dt>
-                  <dd className="font-mono text-xs self-center truncate">
+                  </Row>
+                  <Row label="Location" tone={loc ? "ink" : "muted"}>
                     {loc
                       ? `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`
                       : "not shared"}
-                  </dd>
+                  </Row>
                 </dl>
-
-                <div className="rounded-input bg-paper border border-rule p-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-ink-2 flex items-center gap-1.5">
-                      <span
-                        aria-hidden
-                        className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"
-                      />
-                      Live transcript
-                    </p>
-                    <button
-                      onClick={() => setShowTranscript((v) => !v)}
-                      aria-expanded={showTranscript}
-                      className="min-h-[36px] text-xs font-medium text-accent underline-offset-2 hover:underline"
-                    >
-                      {showTranscript ? "Hide" : "Show"}
-                    </button>
-                  </div>
-                  {showTranscript && (
-                    <ol aria-live="polite" className="mt-2 space-y-2">
-                      {lastLines.length === 0 ? (
-                        <li className="text-sm text-ink-3">
-                          Listening… your words appear here as Raksha hears
-                          them.
-                        </li>
-                      ) : (
-                        lastLines.map((t) => (
-                          <li key={t._id} className="text-sm">
-                            <span className="font-mono text-[11px] text-ink-3 mr-2">
-                              {t.speaker === "user"
-                                ? "You"
-                                : t.speaker === "agent"
-                                  ? "Raksha"
-                                  : "?"}
-                            </span>
-                            {t.text}
-                          </li>
-                        ))
-                      )}
-                    </ol>
-                  )}
-                </div>
-              </section>
+              </Panel>
 
               <section className="grid grid-cols-[1fr_auto] gap-3">
                 <button
                   onClick={() =>
                     perform(() => reportSafe({ sessionId: session!._id }))
                   }
-                  className="min-h-[52px] rounded-full border-2 border-safe text-ink font-semibold flex items-center justify-center gap-2 hover:bg-paper-2 active:translate-y-px"
+                  className={`${btn.outline} border-safe text-ink`}
                 >
                   <CheckCircle2 className="w-5 h-5 text-safe" />
                   I'm safe
@@ -630,7 +562,7 @@ export default function RakshaUserApp() {
                   onClick={() =>
                     perform(() => endSession({ sessionId: session!._id }))
                   }
-                  className="min-h-[52px] px-5 rounded-full text-ink-2 text-sm font-medium hover:bg-paper-2 flex items-center gap-1.5"
+                  className={btn.quiet}
                 >
                   <PhoneOff className="w-4 h-4" />
                   End
@@ -640,16 +572,25 @@ export default function RakshaUserApp() {
           )}
         </main>
 
-        {/* SOS — always reachable, never behind a confirmation */}
+        {/* SOS: always reachable, never behind a confirmation */}
         <div className="sticky bottom-0 z-40 bg-paper/95 backdrop-blur-md border-t border-rule px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             id="sosButton"
             onClick={handleSos}
             disabled={busy}
-            className="w-full min-h-[60px] rounded-card bg-danger text-danger-ink font-semibold text-base tracking-wide flex items-center justify-center gap-2.5 transition-[transform,background-color] duration-150 ease-out hover:bg-danger/90 active:translate-y-px disabled:opacity-70"
+            className={`${btn.danger} w-full min-h-[60px] justify-between px-6`}
           >
-            <Siren className="w-5 h-5" />
-            {sosActive ? "SOS sent · send again" : "SOS · Alert police"}
+            <span className="flex items-center gap-2.5">
+              <Siren className="w-5 h-5" />
+              <span className="label text-xs whitespace-nowrap">
+                {sosActive ? "SOS sent · resend" : "SOS · alert police"}
+              </span>
+            </span>
+            {!sosActive && (
+              <span className="label text-[10px] text-danger-ink/70 whitespace-nowrap">
+                one tap
+              </span>
+            )}
           </button>
           <p className="text-[11px] text-center text-ink-3 mt-2">
             Demo: alerts a consenting stand-in, not a real emergency service.
@@ -669,19 +610,24 @@ export default function RakshaUserApp() {
                   "fixed inset-x-0 bottom-28 z-50 flex justify-center px-4 pointer-events-none"
             }
           >
-            <div className="pointer-events-auto w-full max-w-sm bg-paper rounded-card p-6 space-y-5 shadow-2xl border border-warn/40">
-              <div className="flex items-baseline justify-between">
-                <p className="text-xs font-medium text-warn uppercase tracking-wider">
-                  Safety check-in
-                </p>
+            <div className="pointer-events-auto w-full max-w-sm bg-paper rounded-card border border-warn shadow-2xl">
+              <div className="flex items-center justify-between px-5 pt-4">
+                <p className="label text-[10px] text-warn">Safety check-in</p>
                 <p
-                  className="font-mono text-3xl font-medium text-ink tabular-nums"
+                  className="font-mono text-3xl tabular text-ink"
                   aria-live={countdown % 10 === 0 ? "polite" : "off"}
                 >
-                  {countdown}s
+                  {String(countdown).padStart(2, "0")}
+                  <span className="text-sm text-ink-3">s</span>
                 </p>
               </div>
-              <div className="space-y-1.5">
+              <div className="h-px mx-5 mt-3 bg-rule overflow-hidden">
+                <div
+                  className="h-full bg-warn transition-[width] duration-1000 ease-linear"
+                  style={{ width: `${(countdown / 30) * 100}%` }}
+                />
+              </div>
+              <div className="px-5 py-4 space-y-1.5">
                 <h2 id="checkInTitle" className="font-display lc text-3xl">
                   Are you feeling safe?
                 </h2>
@@ -694,13 +640,7 @@ export default function RakshaUserApp() {
                     : "Automatic alerts are off; Raksha will keep listening."}
                 </p>
               </div>
-              <div className="h-1.5 rounded-full bg-paper-3 overflow-hidden">
-                <div
-                  className="h-full bg-warn transition-[width] duration-1000 ease-linear"
-                  style={{ width: `${(countdown / 30) * 100}%` }}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 border-t border-rule divide-x divide-rule">
                 <button
                   onClick={() =>
                     perform(() =>
@@ -711,7 +651,7 @@ export default function RakshaUserApp() {
                       }),
                     )
                   }
-                  className="min-h-[52px] rounded-full bg-accent text-accent-ink font-semibold flex items-center justify-center gap-2"
+                  className="min-h-[56px] flex items-center justify-center gap-2 font-display lc text-xl text-safe hover:bg-paper-2 rounded-bl-card"
                 >
                   <CheckCircle2 className="w-5 h-5" />
                   I'm safe
@@ -726,7 +666,7 @@ export default function RakshaUserApp() {
                       }),
                     )
                   }
-                  className="min-h-[52px] rounded-full bg-danger text-danger-ink font-semibold flex items-center justify-center gap-2"
+                  className="min-h-[56px] flex items-center justify-center gap-2 font-display lc text-xl bg-danger text-danger-ink hover:bg-danger/90 rounded-br-card"
                 >
                   <Siren className="w-5 h-5" />
                   Send SOS
