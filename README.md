@@ -28,10 +28,9 @@ Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_CONVEX_URL`. Backend se
 
 ## Deploy
 
-```sh
-npx convex deploy              # backend → production deployment
-vercel deploy --prod           # frontend (Vercel env: NEXT_PUBLIC_CONVEX_URL = production .convex.cloud URL)
-```
+Pushing to `main` deploys everything: Vercel runs `npx convex deploy --cmd 'npm run build'` (see `vercel.json`), which pushes the Convex backend to production and then builds the site against it. Requires the Vercel env var `CONVEX_DEPLOY_KEY` (Convex dashboard → Production → Settings → Generate Production Deploy Key).
+
+Manual fallback: `npx convex deploy` then `vercel deploy --prod`.
 
 ## Safety rules for this prototype
 
