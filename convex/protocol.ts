@@ -42,6 +42,18 @@ export function signedCaptionUrl(value: unknown): string {
     throw Error("Unexpected caption host");
   return raw;
 }
+export function rtcUrl(value: unknown): string {
+  const raw = text(value, 500);
+  const url = new URL(raw);
+  // Vaani documents wss:// but returns https:// in practice; LiveKit needs the socket form.
+  if (
+    !["wss:", "https:"].includes(url.protocol) ||
+    !url.hostname.endsWith(".vaanivoice.ai")
+  )
+    throw Error("Unexpected WebRTC host");
+  url.protocol = "wss:";
+  return url.toString().replace(/\/$/, "");
+}
 export async function verifyWebhook(
   raw: string,
   timestamp: string,

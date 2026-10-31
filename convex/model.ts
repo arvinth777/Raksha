@@ -32,12 +32,36 @@ export async function event(
     at: Date.now(),
   });
 }
+// Demo-only placeholders, used when DEMO_SAMPLE_DATA=true and real data is missing.
+export const SAMPLE_LOCATION = {
+  latitude: 12.93523,
+  longitude: 77.62445,
+  accuracyM: 30,
+};
+export const SAMPLE_ADDRESS = "Koramangala 5th Block, Bengaluru";
+export const SAMPLE_NAME = "Priya Sharma";
+export const SAMPLE_PHONE = "+91 98765 43210";
+export function profile(mode: "demo" | "live" | "web") {
+  const sample = process.env.DEMO_SAMPLE_DATA === "true";
+  const phone = process.env.TEST_USER_PHONE;
+  return {
+    name:
+      process.env.TEST_USER_NAME ||
+      (sample ? SAMPLE_NAME : "a registered Raksha user"),
+    phone:
+      mode !== "demo" && phone
+        ? phone.replace(/^(\+91)(\d{5})(\d{5})$/, "$1 $2 $3")
+        : sample
+          ? SAMPLE_PHONE
+          : "unavailable",
+  };
+}
 export async function start(
   ctx: MutationCtx,
   owner: string,
   requestId: string,
   autoEscalate: boolean,
-  mode: "demo" | "live",
+  mode: "demo" | "live" | "web",
 ) {
   if (!requestId.trim() || requestId.length > 100)
     throw new ConvexError("INVALID_REQUEST_ID");
@@ -76,6 +100,9 @@ export async function start(
     lastUserAt: now,
     agentSpeaking: false,
     lastCheckAt: 0,
+    ...(process.env.DEMO_SAMPLE_DATA === "true"
+      ? { location: { ...SAMPLE_LOCATION, capturedAt: now, sample: true } }
+      : {}),
   });
   const jobId = await ctx.db.insert("jobs", {
     sessionId,
@@ -160,6 +187,65 @@ export async function checkIn(
     version: 1,
   });
   return id;
+}
+// ponytail: phrase lists, not a model. Swap in an LLM classifier if demo speech outgrows them.
+const SOS_PHRASES = [
+  /\bsend help\b/,
+  /\bcall (the )?police\b/,
+  /\bhelp me\b/,
+  /\bi need help\b/,
+  /\bplease help\b/,
+  /\bsave me\b/,
+  /\bbachao\b/,
+];
+const CONCERN_PHRASES = [
+  /\bfollow(ing|ed)? me\b/,
+  /\bbeen followed\b/,
+  /\bbehind me\b/,
+  /\bgetting closer\b/,
+  /\b(won'?t|will not) let me (leave|go)\b/,
+  /\bcan'?t (leave|get away|escape)\b/,
+  /\b(scared|afraid|frightened|unsafe)\b/,
+  /\bthreaten(ing|ed)?\b/,
+  /\bgrab(bed|bing)?\b/,
+  /\bstalk(ing|er)?\b/,
+];
+const NEGATED = /\b(not|don'?t|do not|no need to|didn'?t)\s+(\w+\s+){0,2}$/;
+function matches(text: string, patterns: RegExp[]) {
+  for (const p of patterns) {
+    const m = p.exec(text);
+    if (m && !NEGATED.test(text.slice(0, m.index))) return m[0];
+  }
+  return null;
+}
+export function classify(raw: string) {
+  const text = raw.toLowerCase().replace(/[’]/g, "'");
+  const custom = (process.env.SOS_PHRASES ?? "")
+    .split(",")
+    .map((p) => p.trim().toLowerCase())
+    .filter(Boolean)
+    .find((p) => text.includes(p));
+  const sos = custom ?? matches(text, SOS_PHRASES);
+  if (sos) return { action: "sos" as const, phrase: sos };
+  const concern = matches(text, CONCERN_PHRASES);
+  if (concern) return { action: "check_in" as const, phrase: concern };
+  return null;
+}
+// Runs on each finalized user utterance; agent speech never triggers actions.
+export async function screen(
+  ctx: MutationCtx,
+  sessionId: Id<"sessions">,
+  text: string,
+) {
+  const hit = classify(text);
+  if (!hit) return;
+  if (hit.action === "sos") {
+    await event(ctx, sessionId, "detect.sos_phrase", hit.phrase);
+    await sos(ctx, sessionId, `Caller said "${hit.phrase}"`);
+  } else {
+    await event(ctx, sessionId, "detect.concern", hit.phrase);
+    await checkIn(ctx, sessionId, "risk");
+  }
 }
 export async function respond(
   ctx: MutationCtx,

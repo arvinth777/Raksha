@@ -29,7 +29,7 @@ export const get = query({
     return snapshot(ctx, a.sessionId);
   },
 });
-async function snapshot(
+export async function snapshot(
   ctx: Parameters<typeof model.owned>[0],
   sessionId: Parameters<typeof model.owned>[1],
 ) {
@@ -51,7 +51,9 @@ async function snapshot(
       .withIndex("by_sessionId", (q) => q.eq("sessionId", sessionId))
       .order("desc")
       .first(),
-    delivery: jobs.map(({ captionUrl, callId, toolToken, ...safe }) => safe),
+    delivery: jobs.map(
+      ({ captionUrl, callId, toolToken, webToken, webUrl, ...safe }) => safe,
+    ),
     transcripts: await ctx.db
       .query("transcripts")
       .withIndex("by_sessionId_and_index", (q) => q.eq("sessionId", sessionId))

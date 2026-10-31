@@ -49,6 +49,8 @@ export const finish = internalMutation({
     callId: v.optional(v.string()),
     captionUrl: v.optional(v.string()),
     toolToken: v.optional(v.string()),
+    webToken: v.optional(v.string()),
+    webUrl: v.optional(v.string()),
     error: v.optional(v.string()),
   },
   returns: v.null(),
@@ -66,6 +68,15 @@ export const finish = internalMutation({
               : "failed",
       });
     await event(ctx, j.sessionId, `dispatch.${data.state}`, j.purpose);
+    return null;
+  },
+});
+export const note = internalMutation({
+  args: { jobId: v.id("jobs"), type: v.string(), detail: v.string() },
+  returns: v.null(),
+  handler: async (ctx, a) => {
+    const j = await ctx.db.get(a.jobId);
+    if (j) await event(ctx, j.sessionId, a.type, a.detail);
     return null;
   },
 });

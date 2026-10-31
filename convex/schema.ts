@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 export const callState = v.union(
   ...[
     "idle",
@@ -35,11 +36,24 @@ export const checkState = v.union(
     "cancelled",
   ].map(v.literal),
 );
+// demo = synthetic, live = phone call, web = in-browser WebRTC call
+export const sessionMode = v.union(
+  v.literal("demo"),
+  v.literal("live"),
+  v.literal("web"),
+);
 export default defineSchema({
+  ...authTables,
+  users: defineTable({
+    ...authTables.users.validator.fields,
+    role: v.optional(v.union(v.literal("tester"), v.literal("operator"))),
+  })
+    .index("email", ["email"])
+    .index("phone", ["phone"]),
   sessions: defineTable({
     owner: v.string(),
     requestId: v.string(),
-    mode: v.union(v.literal("demo"), v.literal("live")),
+    mode: sessionMode,
     callState,
     monitoringState,
     safetyState,
@@ -50,6 +64,16 @@ export default defineSchema({
     agentSpeaking: v.boolean(),
     autoEscalate: v.boolean(),
     lastCheckAt: v.number(),
+    location: v.optional(
+      v.object({
+        latitude: v.number(),
+        longitude: v.number(),
+        accuracyM: v.number(),
+        capturedAt: v.number(),
+        // true = demo placeholder (DEMO_SAMPLE_DATA), replaced by the first real GPS fix
+        sample: v.optional(v.boolean()),
+      }),
+    ),
   })
     .index("by_owner", ["owner"])
     .index("by_owner_and_requestId", ["owner", "requestId"]),
@@ -71,6 +95,9 @@ export default defineSchema({
     callId: v.optional(v.string()),
     captionUrl: v.optional(v.string()),
     toolToken: v.optional(v.string()),
+    // WebRTC join credentials; served only to the authorised participant.
+    webToken: v.optional(v.string()),
+    webUrl: v.optional(v.string()),
     error: v.optional(v.string()),
     createdAt: v.number(),
   })

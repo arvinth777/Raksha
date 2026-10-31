@@ -2,7 +2,9 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { record, verifyWebhook } from "./protocol";
+import { auth } from "./auth";
 const http = httpRouter();
+auth.addHttpRoutes(http);
 async function boundedBody(request: Request) {
   const reader = request.body?.getReader();
   if (!reader) return "";

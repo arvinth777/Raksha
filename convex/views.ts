@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import schema from "./schema";
+import schema, { sessionMode } from "./schema";
 const session = v.object({
   _id: v.id("sessions"),
   _creationTime: v.number(),
@@ -25,7 +25,7 @@ const event = v.object({
   _creationTime: v.number(),
   ...schema.tables.events.validator.fields,
 });
-const { captionUrl, callId, toolToken, ...safeJob } =
+const { captionUrl, callId, toolToken, webToken, webUrl, ...safeJob } =
   schema.tables.jobs.validator.fields;
 export const sessionView = v.union(
   v.null(),
@@ -46,6 +46,6 @@ export const claimedJob = v.union(
     _id: v.id("jobs"),
     _creationTime: v.number(),
     ...schema.tables.jobs.validator.fields,
-    mode: v.union(v.literal("demo"), v.literal("live")),
+    mode: sessionMode,
   }),
 );

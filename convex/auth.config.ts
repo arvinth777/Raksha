@@ -1,2 +1,3 @@
-// Public functions fail closed until the frontend's JWT provider is selected.
-export default { providers: [] };
+export default {
+  providers: [{ domain: process.env.CONVEX_SITE_URL, applicationID: "convex" }],
+};

@@ -350,3 +350,236 @@ it("CLI successful null returns are not reported as failures", () => {
   expect(parseCliOutput("\n")).toBeNull();
   expect(parseCliOutput('{"ok":true}')).toEqual({ ok: true });
 });
+
+describe("frontend integration authorization", () => {
+  async function users() {
+    const t = convexTest(schema, modules);
+    const ids = await t.run(async (ctx) => ({
+      a: await ctx.db.insert("users", {
+        name: "Tester A",
+        role: "tester",
+        isAnonymous: true,
+      }),
+      b: await ctx.db.insert("users", {
+        name: "Tester B",
+        role: "tester",
+        isAnonymous: true,
+      }),
+      op: await ctx.db.insert("users", {
+        name: "Operator",
+        role: "operator",
+        isAnonymous: true,
+      }),
+    }));
+    const user = (id: string) =>
+      t.withIdentity({
+        subject: id + "|session",
+        issuer: "https://test.convex.site",
+        tokenIdentifier: "https://test.convex.site|" + id + "|session",
+      });
+    return { t, a: user(ids.a), b: user(ids.b), op: user(ids.op) };
+  }
+  it("isolates participant sessions and restricts the operations feed", async () => {
+    const { a, b, op } = await users();
+    const id = await a.mutation(api.web.start, {
+      clientRequestId: "front-1",
+      mode: "demo",
+      autoEscalate: false,
+    });
+    expect((await a.query(api.web.get, { sessionId: id }))!.session.mode).toBe(
+      "demo",
+    );
+    await expect(b.query(api.web.get, { sessionId: id })).rejects.toThrow(
+      "NOT_FOUND",
+    );
+    await expect(a.query(api.web.list, {})).rejects.toThrow(
+      "OPERATOR_REQUIRED",
+    );
+    expect(await op.query(api.web.list, {})).toHaveLength(1);
+  });
+  it("participant cannot place live calls or invoke operator actions", async () => {
+    const { a } = await users();
+    vi.stubEnv("LIVE_CALLS_ENABLED", "true");
+    await expect(
+      a.mutation(api.web.start, {
+        clientRequestId: "live",
+        mode: "live",
+        autoEscalate: false,
+      }),
+    ).rejects.toThrow("LIVE_CALLS_DISABLED");
+    const id = await a.mutation(api.web.start, {
+      clientRequestId: "demo",
+      mode: "demo",
+      autoEscalate: false,
+    });
+    await expect(
+      a.mutation(api.web.requestCheckIn, { sessionId: id }),
+    ).rejects.toThrow("OPERATOR_REQUIRED");
+  });
+  it("operator check-in can be answered only by the session owner", async () => {
+    const { a, b, op } = await users();
+    const id = await a.mutation(api.web.start, {
+      clientRequestId: "check",
+      mode: "demo",
+      autoEscalate: true,
+    });
+    const check = await op.mutation(api.web.requestCheckIn, { sessionId: id });
+    await expect(
+      b.mutation(api.web.respond, {
+        checkInId: check!,
+        expectedVersion: 1,
+        response: "safe",
+      }),
+    ).rejects.toThrow("NOT_FOUND");
+    await a.mutation(api.web.respond, {
+      checkInId: check!,
+      expectedVersion: 1,
+      response: "safe",
+    });
+    expect(
+      (await a.query(api.web.get, { sessionId: id }))!.checkIn!.status,
+    ).toBe("confirmed_safe");
+  });
+  it("validates location and never supplies fabricated defaults", async () => {
+    const { a } = await users();
+    const id = await a.mutation(api.web.start, {
+      clientRequestId: "loc",
+      mode: "demo",
+      autoEscalate: false,
+    });
+    expect(
+      (await a.query(api.web.get, { sessionId: id }))!.session.location,
+    ).toBeUndefined();
+    await expect(
+      a.mutation(api.web.location, {
+        sessionId: id,
+        latitude: 91,
+        longitude: 0,
+        accuracyM: 10,
+        capturedAt: Date.now(),
+      }),
+    ).rejects.toThrow("INVALID_LOCATION");
+    await a.mutation(api.web.location, {
+      sessionId: id,
+      latitude: 0,
+      longitude: 0,
+      accuracyM: 10,
+      capturedAt: Date.now(),
+    });
+    expect(
+      (await a.query(api.web.get, { sessionId: id }))!.session.location!
+        .latitude,
+    ).toBe(0);
+  });
+  it("home SOS skips the user call, deduplicates, and resolution needs an operator", async () => {
+    const { a, op } = await users();
+    const args = { clientRequestId: "sos-home", mode: "demo" as const };
+    const id = await a.mutation(api.web.sos, args);
+    expect(await a.mutation(api.web.sos, args)).toBe(id);
+    const view = (await a.query(api.web.get, { sessionId: id }))!;
+    expect(view.delivery.find((j) => j.purpose === "user")!.state).toBe(
+      "cancelled",
+    );
+    expect(view.delivery.filter((j) => j.purpose === "responder")).toHaveLength(
+      1,
+    );
+    await a.mutation(api.web.reportSafe, { sessionId: id });
+    expect(
+      (await a.query(api.web.get, { sessionId: id }))!.incident!.state,
+    ).toBe("resolution_requested");
+    await expect(
+      a.mutation(api.web.resolve, {
+        incidentId: view.incident!._id,
+        reason: "Reviewed",
+      }),
+    ).rejects.toThrow("OPERATOR_REQUIRED");
+    await op.mutation(api.web.resolve, {
+      incidentId: view.incident!._id,
+      reason: "Synthetic demo checked",
+    });
+    expect(
+      (await a.query(api.web.get, { sessionId: id }))!.incident!.state,
+    ).toBe("resolved");
+  });
+  it("ending a user session cancels its pending check-in but retains incident history", async () => {
+    const { a, op } = await users();
+    const id = await a.mutation(api.web.start, {
+      clientRequestId: "end",
+      mode: "demo",
+      autoEscalate: true,
+    });
+    await op.mutation(api.web.requestCheckIn, { sessionId: id });
+    await a.mutation(api.web.end, { sessionId: id });
+    const view = (await a.query(api.web.get, { sessionId: id }))!;
+    expect(view.session.ended).toBe(true);
+    expect(view.checkIn!.status).toBe("cancelled");
+  });
+});
+describe("speech detection", () => {
+  it("classifies explicit help, concern, negation and custom phrases", async () => {
+    const { classify } = await import("../convex/model");
+    expect(classify("Please call the police")?.action).toBe("sos");
+    expect(classify("Someone has been following me for blocks")?.action).toBe(
+      "check_in",
+    );
+    expect(classify("I don't need help, thanks")).toBeNull();
+    expect(classify("The movie was fun")).toBeNull();
+    vi.stubEnv("SOS_PHRASES", "pineapple pizza");
+    expect(classify("I want pineapple pizza")?.action).toBe("sos");
+  });
+  it("demo speech starts a check-in on concern and SOS on explicit help", async () => {
+    const { t, id } = await setup();
+    await t.mutation(internal.ingest.demoSpeech, {
+      sessionId: id,
+      text: "A man is following me",
+    });
+    let s = await t.query(internal.sessions.inspect, { sessionId: id });
+    expect(s!.checkIn?.status).toBe("pending");
+    await t.mutation(internal.ingest.demoSpeech, {
+      sessionId: id,
+      text: "Help me please",
+    });
+    s = await t.query(internal.sessions.inspect, { sessionId: id });
+    expect(s!.incident?.state).toBe("open");
+    expect(s!.checkIn?.status).toBe("help_requested");
+  });
+});
+describe("webrtc dispatch", () => {
+  it("web sessions get a browser call with no phone number and keep credentials private", async () => {
+    vi.stubEnv("LIVE_CALLS_ENABLED", "true");
+    vi.stubEnv("VAANI_CALLER_AGENT_ID", "test-agent");
+    vi.stubEnv("VAANI_API_KEY", "not-real");
+    const { t, id } = await setup();
+    await t.run((ctx) => ctx.db.patch(id, { mode: "web" }));
+    const j = await t.run((ctx) => ctx.db.query("jobs").first());
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          token: "jwt-token",
+          room_name: "room_abc",
+          connection_url: "wss://rtc.vaanivoice.ai",
+          live_captions_url:
+            "wss://api.vaanivoice.ai/api/live-transcripts/ws/room_abc?token=x",
+        }),
+      ),
+    );
+    await t.action(internal.dispatch.run, { jobId: j!._id });
+    const sent = JSON.parse(String(fetchSpy.mock.calls[0][1]!.body));
+    expect(sent.medium).toBe("webrtc");
+    expect(sent.contact_number).toBeUndefined();
+    const job = await t.run((ctx) => ctx.db.get(j!._id));
+    expect(job).toMatchObject({ callId: "room_abc", webToken: "jwt-token" });
+    const view = await t.query(internal.sessions.inspect, { sessionId: id });
+    expect(JSON.stringify(view)).not.toContain("jwt-token");
+    fetchSpy.mockRestore();
+  });
+  it("rejects a WebRTC server outside Vaani", async () => {
+    const { rtcUrl } = await import("../convex/protocol");
+    expect(() => rtcUrl("wss://evil.example.com")).toThrow();
+    expect(rtcUrl("wss://rtc.vaanivoice.ai")).toBe("wss://rtc.vaanivoice.ai");
+    expect(rtcUrl("https://server.vaanivoice.ai")).toBe(
+      "wss://server.vaanivoice.ai",
+    );
+    expect(() => rtcUrl("http://server.vaanivoice.ai")).toThrow();
+  });
+});

@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as dispatch from "../dispatch.js";
 import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
@@ -16,6 +17,7 @@ import type * as model from "../model.js";
 import type * as protocol from "../protocol.js";
 import type * as sessions from "../sessions.js";
 import type * as views from "../views.js";
+import type * as web from "../web.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +26,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   dispatch: typeof dispatch;
   http: typeof http;
   ingest: typeof ingest;
@@ -32,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   protocol: typeof protocol;
   sessions: typeof sessions;
   views: typeof views;
+  web: typeof web;
 }>;
 
 /**

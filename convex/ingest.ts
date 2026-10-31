@@ -1,7 +1,9 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { internalMutation } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { caption, record, terminalCalls } from "./protocol";
-import { checkIn, event, sos } from "./model";
+import { checkIn, event, screen, sos } from "./model";
 export const captions = internalMutation({
   args: { jobId: v.id("jobs"), messages: v.array(v.any()) },
   returns: v.null(),
@@ -63,8 +65,10 @@ export const captions = internalMutation({
         if (old?.isFinal) continue;
         if (old) await ctx.db.patch(old._id, seg);
         else await ctx.db.insert("transcripts", { sessionId: s._id, ...seg });
-        if (type !== "history" && seg.speaker === "user")
+        if (type !== "history" && seg.speaker === "user") {
           await ctx.db.patch(s._id, { lastUserAt: Date.now() });
+          if (seg.isFinal) await screen(ctx, s._id, seg.text);
+        }
       }
       if (type === "call_ended") {
         await ctx.db.patch(s._id, {
@@ -202,25 +206,74 @@ export const tool = internalMutation({
 export const demoSpeech = internalMutation({
   args: { sessionId: v.id("sessions"), text: v.string() },
   returns: v.null(),
-  handler: async (ctx, a) => {
-    const s = await ctx.db.get(a.sessionId);
-    if (s?.mode !== "demo" || s.ended) throw Error("DEMO_ONLY");
-    if (!a.text || a.text.length > 8000) throw Error("INVALID_TEXT");
-    await ctx.db.patch(s._id, {
-      callState: "connected",
-      monitoringState: "healthy",
-      lastEventAt: Date.now(),
-      lastUserAt: Date.now(),
-    });
+  handler: (ctx, a) => say(ctx, a.sessionId, a.text),
+});
+// Synthetic caller speech for demo sessions; goes through the same detection as live captions.
+export async function say(
+  ctx: MutationCtx,
+  sessionId: Id<"sessions">,
+  text: string,
+) {
+  const s = await ctx.db.get(sessionId);
+  if (s?.mode !== "demo" || s.ended) throw new ConvexError("DEMO_ONLY");
+  text = text.trim();
+  if (!text || text.length > 8000) throw new ConvexError("INVALID_TEXT");
+  await ctx.db.patch(s._id, {
+    callState: "connected",
+    monitoringState: "healthy",
+    lastEventAt: Date.now(),
+    lastUserAt: Date.now(),
+  });
+  await ctx.db.insert("transcripts", {
+    sessionId: s._id,
+    segmentId: crypto.randomUUID(),
+    speaker: "user",
+    text,
+    isFinal: true,
+    index: Date.now(),
+    timestamp: Date.now(),
+  });
+  await screen(ctx, s._id, text);
+  return null;
+}
+
+// Final segments relayed by the user's own browser from the LiveKit room (in-app calls).
+// An empty batch is a heartbeat: the call is up and the feed is healthy.
+export async function browserSegments(
+  ctx: MutationCtx,
+  sessionId: Id<"sessions">,
+  segments: { id: string; text: string; speaker: "user" | "agent" }[],
+) {
+  const s = await ctx.db.get(sessionId);
+  if (s?.mode !== "web" || s.ended) throw new ConvexError("WEB_SESSION_ONLY");
+  if (segments.length > 20) throw new ConvexError("BATCH_TOO_LARGE");
+  await ctx.db.patch(s._id, {
+    lastEventAt: Date.now(),
+    monitoringState: "healthy",
+  });
+  for (const seg of segments) {
+    const text = seg.text.trim();
+    if (!text || text.length > 8000 || !seg.id || seg.id.length > 200) continue;
+    const old = await ctx.db
+      .query("transcripts")
+      .withIndex("by_sessionId_and_segmentId", (q) =>
+        q.eq("sessionId", s._id).eq("segmentId", seg.id),
+      )
+      .unique();
+    if (old) continue;
     await ctx.db.insert("transcripts", {
       sessionId: s._id,
-      segmentId: crypto.randomUUID(),
-      speaker: "user",
-      text: a.text,
+      segmentId: seg.id,
+      speaker: seg.speaker,
+      text,
       isFinal: true,
       index: Date.now(),
       timestamp: Date.now(),
     });
-    return null;
-  },
-});
+    if (seg.speaker === "user") {
+      await ctx.db.patch(s._id, { lastUserAt: Date.now() });
+      await screen(ctx, s._id, text);
+    }
+  }
+  return null;
+}
