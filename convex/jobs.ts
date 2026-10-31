@@ -144,17 +144,14 @@ export const captionTarget = internalQuery({
   returns: v.union(v.null(), v.object({ url: v.string() })),
   handler: async (ctx, a) => {
     const j = await ctx.db.get(a.jobId);
-    if (
-      !j?.captionUrl ||
-      j.purpose !== "user" ||
-      !["accepted", "answered"].includes(j.state)
-    )
+    if (!j?.captionUrl || !["accepted", "answered"].includes(j.state))
       return null;
     const s = await ctx.db.get(j.sessionId);
     if (
       !s ||
-      s.ended ||
-      ["ended", "failed", "no_answer", "rejected"].includes(s.callState)
+      (j.purpose === "user" &&
+        (s.ended ||
+          ["ended", "failed", "no_answer", "rejected"].includes(s.callState)))
     )
       return null;
     return { url: j.captionUrl };

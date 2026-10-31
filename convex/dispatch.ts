@@ -26,7 +26,10 @@ export const run = internalAction({
     const web =
       work.purpose === "user"
         ? work.mode === "web"
-        : !process.env.TEST_RESPONDER_PHONE;
+        : !process.env.TEST_RESPONDER_PHONE ||
+          // One phone can't take both calls: brief the police on the /police desk instead.
+          (work.mode === "live" &&
+            process.env.TEST_RESPONDER_PHONE === process.env.TEST_USER_PHONE);
     const number = web
       ? null
       : work.purpose === "user"
@@ -155,7 +158,7 @@ export const run = internalAction({
           n: 0,
         });
       // Phone calls: read Vaani's caption stream server-side (in-app calls relay from the browser).
-      if (captionUrl && !web && work.purpose === "user")
+      if (captionUrl && !web)
         await ctx.scheduler.runAfter(0, internal.captions.relay, { jobId });
     } catch (e) {
       await ctx.runMutation(internal.jobs.finish, {

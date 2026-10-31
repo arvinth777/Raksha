@@ -160,3 +160,23 @@ export const testEnd = internalMutation({
     return null;
   },
 });
+
+// Transcripts, locations and battery are kept 24 h (PRD retention); sessions,
+// incidents and events stay as the audit trail.
+export const purge = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const cutoff = Date.now() - 24 * 3600000;
+    const old = await ctx.db.query("transcripts").order("asc").take(500);
+    const stale = old.filter((t) => t._creationTime < cutoff);
+    for (const t of stale) await ctx.db.delete(t._id);
+    const sessions = await ctx.db.query("sessions").order("asc").take(200);
+    for (const s of sessions)
+      if (s.createdAt < cutoff && (s.location || s.battery))
+        await ctx.db.patch(s._id, { location: undefined, battery: undefined });
+    if (stale.length === 500)
+      await ctx.scheduler.runAfter(0, internal.sessions.purge, {});
+    return null;
+  },
+});

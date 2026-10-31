@@ -368,7 +368,10 @@ export const list = query({
   returns: v.array(sessionView),
   handler: async (ctx) => {
     await operator(ctx);
-    const rows = await ctx.db.query("sessions").order("desc").take(30);
+    // Anyone with the demo link is an operator: keep older conversations out of view.
+    const rows = (await ctx.db.query("sessions").order("desc").take(30)).filter(
+      (s) => Date.now() - s.createdAt < 2 * 3600000,
+    );
     return Promise.all(rows.map((s) => snapshot(ctx, s._id)));
   },
 });

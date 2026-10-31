@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as callstatus from "../callstatus.js";
 import type * as captions from "../captions.js";
+import type * as crons from "../crons.js";
 import type * as dispatch from "../dispatch.js";
 import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   callstatus: typeof callstatus;
   captions: typeof captions;
+  crons: typeof crons;
   dispatch: typeof dispatch;
   http: typeof http;
   ingest: typeof ingest;

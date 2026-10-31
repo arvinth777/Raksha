@@ -600,3 +600,72 @@ describe("police trigger without agent tools", () => {
     expect(s!.incident?.reason).toContain("following me near the metro");
   });
 });
+describe("audit fixes", () => {
+  it("officer saying 'received' on the police call acknowledges the alert", async () => {
+    const { t, id } = await setup();
+    await t.mutation(internal.sessions.testSos, { sessionId: id });
+    const job = await t.run(async (ctx) =>
+      (await ctx.db.query("jobs").collect()).find(
+        (j) => j.purpose === "responder",
+      ),
+    );
+    await t.run((ctx) => ctx.db.patch(job!._id, { state: "answered" }));
+    await t.mutation(internal.ingest.captions, {
+      jobId: job!._id,
+      messages: [
+        {
+          type: "transcript",
+          segment: {
+            id: "o1",
+            speaker: "user",
+            text: "Received, we are on it.",
+            is_final: true,
+            segment_index: 0,
+            timestamp: 1,
+          },
+        },
+      ],
+    });
+    const s = await t.query(internal.sessions.inspect, { sessionId: id });
+    expect(s!.incident?.state).toBe("acknowledged");
+    expect(s!.transcripts.some((x: any) => x.text.includes("Received"))).toBe(
+      false,
+    );
+  });
+  it("caps real calls across all users", async () => {
+    const { t } = await setup();
+    for (let i = 0; i < 6; i++)
+      await t
+        .mutation(internal.sessions.testStart, {
+          clientRequestId: `r${i}`,
+          autoEscalate: false,
+          mode: "live",
+        })
+        .catch(() => {});
+    await t.run(async (ctx) => {
+      const now = Date.now();
+      for (let i = 0; i < 6; i++)
+        await ctx.db.insert("sessions", {
+          owner: `u${i}`,
+          requestId: `x${i}`,
+          mode: "web",
+          callState: "ended",
+          monitoringState: "stopped",
+          safetyState: "monitoring",
+          ended: true,
+          createdAt: now,
+          lastEventAt: now,
+          lastUserAt: now,
+          agentSpeaking: false,
+          autoEscalate: false,
+          lastCheckAt: 0,
+        });
+    });
+    await expect(
+      t.run(async (ctx) => {
+        const { start } = await import("../convex/model");
+        return start(ctx, "fresh-user", "new", false, "web");
+      }),
+    ).rejects.toThrow("RATE_LIMITED");
+  });
+});

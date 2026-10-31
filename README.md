@@ -4,7 +4,7 @@ Raksha is a call-first women's safety prototype built on Vaani (voice AI) and Co
 
 - Live demo: https://raksha-mocha.vercel.app (`/` person's app · `/police` police desk · `/ops` operations)
 - Design system: [design.md](design.md) · tokens in [tokens.css](tokens.css)
-- [Product requirements](RAKSHA_PRD.md) · [Vaani documentation review](VAANI_DOCUMENTATION_REVIEW.md) · [Backend status](docs/BACKEND_STATUS.md)
+- [Product requirements](RAKSHA_PRD.md) · [Vaani documentation review](VAANI_DOCUMENTATION_REVIEW.md)
 
 ## Stack
 

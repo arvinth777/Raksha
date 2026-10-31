@@ -10,7 +10,9 @@ export const captions = internalMutation({
   handler: async (ctx, a) => {
     if (a.messages.length > 100) throw Error("BATCH_TOO_LARGE");
     const job = await ctx.db.get(a.jobId);
-    if (!job || job.purpose !== "user") throw Error("NOT_FOUND");
+    if (!job) throw Error("NOT_FOUND");
+    if (job.purpose === "responder")
+      return acknowledgeFromSpeech(ctx, job, a.messages);
     const s = await ctx.db.get(job.sessionId);
     if (!s || s.ended) return null;
     for (const raw of a.messages) {
@@ -204,6 +206,53 @@ export async function browserSegments(
       await ctx.db.patch(s._id, { lastUserAt: Date.now() });
       await screen(ctx, s._id, text);
     } else await screenAgent(ctx, s._id, text);
+  }
+  return null;
+}
+
+// Police call: the officer saying "received" (etc.) acknowledges the alert. Their
+// words are not stored in the caller's transcript.
+const ACK =
+  /\b(received|got it|copy( that)?|acknowledged?|noted|on (my|our|the) way|confirm(ed)?)\b/i;
+async function acknowledgeFromSpeech(
+  ctx: MutationCtx,
+  job: { _id: Id<"jobs">; sessionId: Id<"sessions">; state: string },
+  messages: unknown[],
+) {
+  if (job.state === "acknowledged") return null;
+  for (const raw of messages) {
+    const msg = record(raw);
+    const segs =
+      msg.type === "transcript"
+        ? [msg.segment ?? msg]
+        : msg.type === "history" && Array.isArray(msg.segments)
+          ? msg.segments
+          : [];
+    for (const item of segs) {
+      const seg = record(item);
+      if (
+        seg.speaker !== "user" ||
+        seg.is_final !== true ||
+        typeof seg.text !== "string"
+      )
+        continue;
+      if (!ACK.test(seg.text)) continue;
+      const incident = await ctx.db
+        .query("incidents")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", job.sessionId))
+        .order("desc")
+        .first();
+      if (incident?.state === "open")
+        await ctx.db.patch(incident._id, { state: "acknowledged" });
+      await ctx.db.patch(job._id, { state: "acknowledged" });
+      await event(
+        ctx,
+        job.sessionId,
+        "responder.acknowledged",
+        `Officer said: "${seg.text.slice(0, 80)}"`,
+      );
+      return null;
+    }
   }
   return null;
 }

@@ -63,6 +63,17 @@ export async function start(
     throw new ConvexError("ACTIVE_SESSION_EXISTS");
   if (recent.length === 10 && Date.now() - recent[9].createdAt < 3600000)
     throw new ConvexError("RATE_LIMITED");
+  // Sign-in is one tap (new user each time), so also cap real calls across everyone.
+  // ponytail: scans the latest 20 sessions; add a createdAt index if traffic grows.
+  if (mode !== "demo") {
+    const latest = await ctx.db.query("sessions").order("desc").take(20);
+    if (
+      latest.filter(
+        (s) => s.mode !== "demo" && Date.now() - s.createdAt < 600000,
+      ).length >= 6
+    )
+      throw new ConvexError("RATE_LIMITED");
+  }
   const now = Date.now();
   const sessionId = await ctx.db.insert("sessions", {
     owner,
