@@ -47,7 +47,7 @@ export default function RakshaUserApp() {
   const [error, setError] = useState("");
   const [callMode, setCallMode] = useState<"demo" | "web" | "live">("demo");
   const [autoEscalate, setAutoEscalate] = useState(false);
-  const [showTranscript, setShowTranscript] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(true);
   const [countdown, setCountdown] = useState(30);
   const [clockOffset, setClockOffset] = useState(0);
   const currentSession = useQuery(api.web.current);
@@ -280,7 +280,7 @@ export default function RakshaUserApp() {
       : session?.callState === "connected"
         ? { text: "On the line", tone: "live" as const }
         : { text: "Connecting", tone: "live" as const };
-  const lastLines = (transcripts ?? []).slice(-3);
+  const lastLines = (transcripts ?? []).slice(-4);
   const modes = [
     { value: "demo", label: "Typed demo", hint: "Type what you'd say" },
     { value: "web", label: "In-app call", hint: "Talk right here" },
@@ -536,26 +536,34 @@ export default function RakshaUserApp() {
                   <dt className="text-ink-3">Location</dt>
                   <dd className="font-mono text-xs self-center truncate">
                     {loc
-                      ? loc.sample
-                        ? "sample (demo)"
-                        : `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`
+                      ? `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`
                       : "not shared"}
                   </dd>
                 </dl>
 
-                <div>
-                  <button
-                    onClick={() => setShowTranscript((v) => !v)}
-                    aria-expanded={showTranscript}
-                    className="min-h-[40px] text-sm font-medium text-accent underline-offset-2 hover:underline"
-                  >
-                    {showTranscript ? "Hide transcript" : "Show transcript"}
-                  </button>
+                <div className="rounded-input bg-paper border border-rule p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-ink-2 flex items-center gap-1.5">
+                      <span
+                        aria-hidden
+                        className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"
+                      />
+                      Live transcript
+                    </p>
+                    <button
+                      onClick={() => setShowTranscript((v) => !v)}
+                      aria-expanded={showTranscript}
+                      className="min-h-[36px] text-xs font-medium text-accent underline-offset-2 hover:underline"
+                    >
+                      {showTranscript ? "Hide" : "Show"}
+                    </button>
+                  </div>
                   {showTranscript && (
-                    <ol className="mt-2 space-y-2">
+                    <ol aria-live="polite" className="mt-2 space-y-2">
                       {lastLines.length === 0 ? (
                         <li className="text-sm text-ink-3">
-                          Nothing said yet.
+                          Listening… your words appear here as Raksha hears
+                          them.
                         </li>
                       ) : (
                         lastLines.map((t) => (

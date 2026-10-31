@@ -33,12 +33,7 @@ export async function event(
   });
 }
 // Demo-only placeholders, used when DEMO_SAMPLE_DATA=true and real data is missing.
-export const SAMPLE_LOCATION = {
-  latitude: 12.93523,
-  longitude: 77.62445,
-  accuracyM: 30,
-};
-export const SAMPLE_ADDRESS = "Koramangala 5th Block, Bengaluru";
+// Location is never faked: no GPS means "unavailable".
 export const SAMPLE_NAME = "Priya Sharma";
 export const SAMPLE_PHONE = "+91 98765 43210";
 export function profile(mode: "demo" | "live" | "web") {
@@ -100,9 +95,6 @@ export async function start(
     lastUserAt: now,
     agentSpeaking: false,
     lastCheckAt: 0,
-    ...(process.env.DEMO_SAMPLE_DATA === "true"
-      ? { location: { ...SAMPLE_LOCATION, capturedAt: now, sample: true } }
-      : {}),
   });
   const jobId = await ctx.db.insert("jobs", {
     sessionId,
@@ -191,7 +183,8 @@ export async function checkIn(
 // ponytail: phrase lists, not a model. Swap in an LLM classifier if demo speech outgrows them.
 const SOS_PHRASES = [
   /\bsend help\b/,
-  /\bcall (the )?police\b/,
+  /\b(call|get|need|want|bring|send) (the )?police\b/,
+  /\bpolice now\b/,
   /\bhelp me\b/,
   /\bi need help\b/,
   /\bplease help\b/,
@@ -241,11 +234,59 @@ export async function screen(
   if (!hit) return;
   if (hit.action === "sos") {
     await event(ctx, sessionId, "detect.sos_phrase", hit.phrase);
-    await sos(ctx, sessionId, `Caller said "${hit.phrase}"`);
+    // Captions arrive in fragments; the last few carry the context ("…grabbed my arm near HSR Layout").
+    const earlier = (
+      await ctx.db
+        .query("transcripts")
+        .withIndex("by_sessionId_and_index", (q) =>
+          q.eq("sessionId", sessionId),
+        )
+        .order("desc")
+        .take(8)
+    )
+      .filter(
+        (t) =>
+          t.speaker === "user" && t.isFinal && t.text.trim() !== text.trim(),
+      )
+      .slice(0, 3)
+      .reverse()
+      .map((t) => t.text.trim());
+    const said = [...earlier, text.trim()].join(" ").slice(-400);
+    await sos(ctx, sessionId, `Caller said: "${said}"`);
   } else {
     await event(ctx, sessionId, "detect.concern", hit.phrase);
     await checkIn(ctx, sessionId, "risk");
   }
+}
+// The caller agent announcing an alert is a decision the backend acts on, so the police
+// leg doesn't depend on Vaani tool calls reaching us.
+const AGENT_ALERT =
+  /\b(alerting|calling|contacting|notifying) (the )?police\b|\bpolice (have been|are being) (alerted|notified|called)\b/i;
+export async function screenAgent(
+  ctx: MutationCtx,
+  sessionId: Id<"sessions">,
+  text: string,
+) {
+  if (!AGENT_ALERT.test(text)) return;
+  const said = await ctx.db
+    .query("transcripts")
+    .withIndex("by_sessionId_and_index", (q) => q.eq("sessionId", sessionId))
+    .order("desc")
+    .take(12);
+  const caller = said
+    .filter((t) => t.speaker === "user" && t.isFinal)
+    .slice(0, 2)
+    .reverse()
+    .map((t) => t.text.trim())
+    .join(" ");
+  await event(ctx, sessionId, "detect.agent_alert", text.slice(0, 120));
+  await sos(
+    ctx,
+    sessionId,
+    caller
+      ? `Raksha raised SOS after the caller said: "${caller.slice(0, 300)}"`
+      : "Raksha raised SOS on the call",
+  );
 }
 export async function respond(
   ctx: MutationCtx,

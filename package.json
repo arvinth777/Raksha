@@ -21,7 +21,7 @@
     "@types/leaflet": "^1.9.22",
     "convex": "^1.49.0",
     "leaflet": "^1.9.4",
-    "livekit-client": "^2.23.0",
+    "livekit-client": "2.15.0",
     "lucide-react": "^1.66.0",
     "next": "^16.4.3",
     "react": "^18.3.1",

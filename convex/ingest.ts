@@ -3,7 +3,7 @@ import { internalMutation } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { caption, record, terminalCalls } from "./protocol";
-import { checkIn, event, screen, sos } from "./model";
+import { checkIn, event, screen, screenAgent, sos } from "./model";
 export const captions = internalMutation({
   args: { jobId: v.id("jobs"), messages: v.array(v.any()) },
   returns: v.null(),
@@ -68,7 +68,8 @@ export const captions = internalMutation({
         if (type !== "history" && seg.speaker === "user") {
           await ctx.db.patch(s._id, { lastUserAt: Date.now() });
           if (seg.isFinal) await screen(ctx, s._id, seg.text);
-        }
+        } else if (type !== "history" && seg.speaker === "agent" && seg.isFinal)
+          await screenAgent(ctx, s._id, seg.text);
       }
       if (type === "call_ended") {
         await ctx.db.patch(s._id, {
@@ -277,7 +278,7 @@ export async function browserSegments(
     if (seg.speaker === "user") {
       await ctx.db.patch(s._id, { lastUserAt: Date.now() });
       await screen(ctx, s._id, text);
-    }
+    } else await screenAgent(ctx, s._id, text);
   }
   return null;
 }

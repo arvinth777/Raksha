@@ -324,11 +324,6 @@ function PoliceDesk() {
                       {ago(loc.capturedAt, now)}
                       {alert.session.battery &&
                         ` · battery ${Math.round(alert.session.battery.level * 100)}%`}
-                      {loc.sample && (
-                        <span className="ml-1 text-warn">
-                          · sample location
-                        </span>
-                      )}
                     </p>
                     <a
                       href={`https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`}

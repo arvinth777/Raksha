@@ -6,7 +6,7 @@ import type { ActionCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { record, rtcUrl, signedCaptionUrl, text } from "./protocol";
-import { profile, SAMPLE_ADDRESS } from "./model";
+import { profile } from "./model";
 export const run = internalAction({
   args: { jobId: v.id("jobs") },
   returns: v.null(),
@@ -178,11 +178,7 @@ async function policeBrief(
   const view = await ctx.runQuery(internal.sessions.inspect, { sessionId });
   const loc = view?.session.location;
   const who = profile(view?.session.mode ?? "demo");
-  const address = !loc
-    ? null
-    : loc.sample
-      ? SAMPLE_ADDRESS
-      : await streetAddress(loc.latitude, loc.longitude);
+  const address = loc ? await streetAddress(loc.latitude, loc.longitude) : null;
   const fields = {
     user_name: who.name,
     user_phone: who.phone,
@@ -267,11 +263,10 @@ async function callerContext(
 ) {
   const view = await ctx.runQuery(internal.sessions.inspect, { sessionId });
   const loc = view?.session.location;
-  const known =
-    loc && !loc.sample
-      ? ((await streetAddress(loc.latitude, loc.longitude)) ??
-        `latitude ${loc.latitude.toFixed(4)}, longitude ${loc.longitude.toFixed(4)}`)
-      : "unknown";
+  const known = loc
+    ? ((await streetAddress(loc.latitude, loc.longitude)) ??
+      `latitude ${loc.latitude.toFixed(4)}, longitude ${loc.longitude.toFixed(4)}`)
+    : "unknown";
   return {
     known_location: known,
     user_name: profile(view?.session.mode ?? "demo").name,

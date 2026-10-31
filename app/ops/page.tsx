@@ -70,7 +70,7 @@ function RakshaOpsDashboard() {
       lastLongitude: v.session.location?.longitude,
       accuracyM: v.session.location?.accuracyM,
       locationAddress: v.session.location
-        ? `${v.session.location.latitude.toFixed(4)}, ${v.session.location.longitude.toFixed(4)}${v.session.location.sample ? " (sample)" : ""}`
+        ? `${v.session.location.latitude.toFixed(4)}, ${v.session.location.longitude.toFixed(4)}`
         : undefined,
       battery: v.session.battery
         ? `${Math.round(v.session.battery.level * 100)}%${v.session.battery.charging ? " · charging" : ""}`

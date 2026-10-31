@@ -624,6 +624,11 @@ it("accepts Vaani caption links in https form and converts them to wss", () => {
       "https://api.vaanivoice.ai/api/live-transcripts/ws/outbound-1?token=t",
     ),
   ).toBe("wss://api.vaanivoice.ai/api/live-transcripts/ws/outbound-1?token=t");
+  expect(
+    signedCaptionUrl(
+      "https://platform.vaani.dev/api/live-transcripts/stream?token=t",
+    ),
+  ).toBe("https://platform.vaani.dev/api/live-transcripts/stream?token=t");
   expect(() =>
     signedCaptionUrl("https://evil.example/api/live-transcripts/x"),
   ).toThrow();
@@ -649,4 +654,36 @@ it("classifies Vaani call-history statuses", async () => {
   expect(
     classify({ call_status: "In Progress", sub_status: "Started" }),
   ).toBeNull();
+});
+describe("police trigger without agent tools", () => {
+  it("'get the police now' raises SOS with the caller's full sentence", async () => {
+    const { t, id } = await setup();
+    await t.mutation(internal.ingest.demoSpeech, {
+      sessionId: id,
+      text: "A man grabbed my arm near HSR Layout. Get the police now.",
+    });
+    const s = await t.query(internal.sessions.inspect, { sessionId: id });
+    expect(s!.incident?.reason).toContain("grabbed my arm near HSR Layout");
+  });
+  it("Raksha saying it is alerting the police raises SOS", async () => {
+    const { t, id } = await setup();
+    await t.run((ctx) => ctx.db.patch(id, { mode: "web" }));
+    const { browserSegments } = await import("../convex/ingest");
+    await t.run((ctx) =>
+      browserSegments(ctx, id, [
+        {
+          id: "u1",
+          text: "A man is following me near the metro",
+          speaker: "user",
+        },
+        {
+          id: "a1",
+          text: "I'm alerting the police now and sharing your location.",
+          speaker: "agent",
+        },
+      ]),
+    );
+    const s = await t.query(internal.sessions.inspect, { sessionId: id });
+    expect(s!.incident?.reason).toContain("following me near the metro");
+  });
 });
