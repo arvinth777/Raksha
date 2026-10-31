@@ -262,6 +262,14 @@ export default function RakshaUserApp() {
   const loc = view?.session.location;
   const police = view?.delivery.find((j) => j.purpose === "responder");
   const sosActive = session?.safetyState === "sos_active";
+  // Vaani's own reason, e.g. "Calls are only permitted between 08:00 and 20:00 IST".
+  const callFailed =
+    session?.callState === "failed" &&
+    (view?.delivery
+      .find((j) => j.purpose === "user")
+      ?.error?.replace(/^PROVIDER_HTTP_\d+:\s*/, "")
+      .trim() ||
+      "The call provider refused the call.");
   const status = !isSessionActive
     ? { text: "Standing by", tone: "idle" as const }
     : sosActive
@@ -455,14 +463,18 @@ export default function RakshaUserApp() {
                 >
                   {sosActive
                     ? "Police contact alerted"
-                    : session?.callState === "connected"
-                      ? "Raksha is with you"
-                      : "Connecting you to Raksha"}
+                    : callFailed
+                      ? "The call couldn't be placed"
+                      : session?.callState === "connected"
+                        ? "Raksha is with you"
+                        : "Connecting you to Raksha"}
                 </h1>
-                <p className="text-ink-2">
+                <p className={callFailed ? "text-danger" : "text-ink-2"}>
                   {sosActive
                     ? "Your location and what you said were shared. Stay on the line."
-                    : "Talk naturally. Say “call the police” any time you need help."}
+                    : callFailed
+                      ? `${callFailed} End this session and try an In-app call.`
+                      : "Talk naturally. Say “call the police” any time you need help."}
                 </p>
               </section>
 

@@ -21,12 +21,17 @@ export const run = internalAction({
       });
       return null;
     }
+    // Vaani refuses phone calls outside 08:00–20:00 IST (TRAI).
+    // ponytail: window hardcoded from Vaani's 403 message; move to config if Vaani changes it.
+    const istMinutes = (Math.floor(Date.now() / 60000) + 330) % 1440;
+    const outsideCallingHours = istMinutes < 480 || istMinutes >= 1200;
     // User leg follows the session mode; the police leg rings a phone only once
     // TEST_RESPONDER_PHONE is configured (after number KYC), else the browser police desk.
     const web =
       work.purpose === "user"
         ? work.mode === "web"
         : !process.env.TEST_RESPONDER_PHONE ||
+          outsideCallingHours ||
           // One phone can't take both calls: brief the police on the /police desk instead.
           (work.mode === "live" &&
             process.env.TEST_RESPONDER_PHONE === process.env.TEST_USER_PHONE);
@@ -109,7 +114,10 @@ export const run = internalAction({
         await ctx.runMutation(internal.jobs.finish, {
           jobId,
           state: response.status >= 500 ? "unknown" : "failed",
-          error: `PROVIDER_HTTP_${response.status}`,
+          // Keep Vaani's own reason (e.g. the TRAI calling window) for the app to show.
+          error: `PROVIDER_HTTP_${response.status}: ${String(
+            (await response.json().catch(() => ({})))?.message ?? "",
+          ).slice(0, 160)}`,
         });
         return null;
       }
