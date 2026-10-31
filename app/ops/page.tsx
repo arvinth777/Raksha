@@ -227,6 +227,7 @@ export default function RashaOpsDashboard() {
             <TacticalMap
               latitude={selectedSession?.lastLatitude ?? 12.9716}
               longitude={selectedSession?.lastLongitude ?? 77.6412}
+              accuracyM={selectedSession?.accuracyM ?? 12}
               citizenName={selectedSession?.userName ?? "Citizen"}
               isEmergency={isEmergency}
               patrolDispatched={isPatrolDispatched}
@@ -317,8 +318,15 @@ export default function RashaOpsDashboard() {
           <div className="p-4 border-b border-[#1e293b] space-y-3 bg-[#070d18]">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-400">Live GPS Location</span>
-              <span className="font-medium text-white truncate max-w-[170px]">
+              <span className="font-medium text-white truncate max-w-[190px]" title={selectedSession?.locationAddress}>
                 {selectedSession?.locationAddress || "100ft Rd, Indiranagar"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">GPS Coordinates</span>
+              <span className="font-mono text-emerald-400 text-[11px]">
+                {selectedSession?.lastLatitude ? `${selectedSession.lastLatitude.toFixed(5)}°, ${selectedSession.lastLongitude.toFixed(5)}°` : "12.97160°, 77.64120°"} (±{Math.round(selectedSession?.accuracyM || 10)}m)
               </span>
             </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
@@ -20,16 +20,18 @@ import {
   Siren,
   Timer,
   LayoutDashboard,
-  ExternalLink,
-  Sparkles,
+  LocateFixed,
+  Navigation,
+  Compass,
 } from "lucide-react";
 
 export default function RashaUserApp() {
   const [userName] = useState("Sreenithi");
   const [userPhone] = useState("+91 98450 12894");
   const [activeSessionId, setActiveSessionId] = useState<Id<"sessions"> | null>(null);
-  const [currentAddress, setCurrentAddress] = useState("100ft Road, Indiranagar, Bengaluru");
-  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [currentAddress, setCurrentAddress] = useState("Acquiring high-accuracy GPS...");
+  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+  const [geoPermissionState, setGeoPermissionState] = useState<"granted" | "prompt" | "denied" | "unknown">("unknown");
   const [batteryLevel, setBatteryLevel] = useState(86);
   const [isLocating, setIsLocating] = useState(false);
   const [callMode, setCallMode] = useState<"webrtc" | "telephony">("webrtc");
@@ -60,7 +62,135 @@ export default function RashaUserApp() {
     sessionId ? { sessionId } : "skip"
   );
 
-  // Monitor Battery Status
+  // Reverse Geocoding with OpenStreetMap Nominatim
+  const lastGeocodeTime = useRef<number>(0);
+  const reverseGeocode = useCallback(async (lat: number, lon: number) => {
+    const now = Date.now();
+    // Throttle requests to once every 10 seconds to respect OSM policy
+    if (now - lastGeocodeTime.current < 10000) return;
+    lastGeocodeTime.current = now;
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const road = data.address?.road || data.address?.neighbourhood || data.address?.suburb;
+        const city = data.address?.city || data.address?.state_district || "Bengaluru";
+        const shortAddr = road ? `${road}, ${city}` : data.display_name.split(",").slice(0, 3).join(",");
+        setCurrentAddress(shortAddr);
+        return shortAddr;
+      }
+    } catch (err) {
+      console.warn("Reverse geocode notice:", err);
+    }
+    const fallback = `${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E, Indiranagar`;
+    setCurrentAddress(fallback);
+    return fallback;
+  }, []);
+
+  // Check & Request Geolocation Permissions
+  const requestLocation = useCallback(() => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setGeoPermissionState("denied");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        setGpsCoords({ lat: latitude, lng: longitude, accuracy });
+        setGeoPermissionState("granted");
+        setIsLocating(false);
+
+        reverseGeocode(latitude, longitude).then((addr) => {
+          if (sessionId) {
+            updateLocation({
+              sessionId,
+              latitude,
+              longitude,
+              accuracyM: accuracy,
+              locationAddress: addr,
+              batteryLevel,
+            }).catch(console.error);
+          }
+        });
+      },
+      (err) => {
+        setIsLocating(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoPermissionState("denied");
+        } else {
+          // If timeout or position unavailable, fall back to Bengaluru defaults
+          setGpsCoords({ lat: 12.9716, lng: 77.6412, accuracy: 25 });
+          setCurrentAddress("100ft Road, Indiranagar, Bengaluru");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  }, [reverseGeocode, sessionId, updateLocation, batteryLevel]);
+
+  // Check initial permission state
+  useEffect(() => {
+    if (typeof window !== "undefined" && navigator.permissions) {
+      navigator.permissions
+        .query({ name: "geolocation" as PermissionName })
+        .then((perm) => {
+          setGeoPermissionState(perm.state as any);
+          perm.onchange = () => {
+            setGeoPermissionState(perm.state as any);
+            if (perm.state === "granted") requestLocation();
+          };
+          if (perm.state === "granted") {
+            requestLocation();
+          }
+        })
+        .catch(() => {
+          // Fallback if permission query is not supported
+          requestLocation();
+        });
+    } else {
+      requestLocation();
+    }
+  }, [requestLocation]);
+
+  // Continuous HTML5 Watch Position
+  useEffect(() => {
+    if (typeof window === "undefined" || !navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        setGpsCoords({ lat: latitude, lng: longitude, accuracy });
+        setGeoPermissionState("granted");
+
+        reverseGeocode(latitude, longitude).then((addr) => {
+          if (sessionId) {
+            updateLocation({
+              sessionId,
+              latitude,
+              longitude,
+              accuracyM: accuracy,
+              locationAddress: addr || currentAddress,
+              batteryLevel,
+            }).catch(console.error);
+          }
+        });
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoPermissionState("denied");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [sessionId, batteryLevel, updateLocation, reverseGeocode, currentAddress]);
+
+  // Monitor Battery
   useEffect(() => {
     if (typeof navigator !== "undefined" && "getBattery" in navigator) {
       (navigator as any).getBattery().then((battery: any) => {
@@ -71,39 +201,6 @@ export default function RashaUserApp() {
       }).catch(() => {});
     }
   }, []);
-
-  // HTML5 Real-Time Geolocation Watcher
-  useEffect(() => {
-    if (typeof window === "undefined" || !navigator.geolocation) return;
-
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const { latitude, longitude, accuracy } = pos.coords;
-        setGpsCoords({ lat: latitude, lng: longitude });
-
-        const addr = `Near Metro Pillar ${Math.floor(longitude * 100) % 200}, Indiranagar 100ft Rd`;
-        setCurrentAddress(addr);
-
-        if (sessionId) {
-          updateLocation({
-            sessionId,
-            latitude,
-            longitude,
-            accuracyM: accuracy,
-            locationAddress: addr,
-            batteryLevel,
-          }).catch(console.error);
-        }
-      },
-      (err) => {
-        console.warn("GPS watch position notice:", err.message);
-        setGpsCoords({ lat: 12.9716, lng: 77.6412 });
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [sessionId, batteryLevel, updateLocation]);
 
   // Check-In Countdown Timer
   useEffect(() => {
@@ -126,24 +223,31 @@ export default function RashaUserApp() {
   // Handle Hero Button "I'm Feeling Unsafe"
   const handleFeelingUnsafe = async () => {
     setIsLocating(true);
-    try {
-      let lat = gpsCoords?.lat ?? 12.9716;
-      let lng = gpsCoords?.lng ?? 77.6412;
+    let lat = gpsCoords?.lat ?? 12.9716;
+    let lng = gpsCoords?.lng ?? 77.6412;
+    let acc = gpsCoords?.accuracy ?? 15;
 
-      if (navigator.geolocation) {
-        try {
-          const freshPos = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              enableHighAccuracy: true,
-              timeout: 4000,
-            });
+    // Try a fresh immediate GPS fix
+    if (navigator.geolocation) {
+      try {
+        const fresh = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 5000,
           });
-          lat = freshPos.coords.latitude;
-          lng = freshPos.coords.longitude;
-        } catch {
-          // fallback coordinates
-        }
+        });
+        lat = fresh.coords.latitude;
+        lng = fresh.coords.longitude;
+        acc = fresh.coords.accuracy;
+        setGpsCoords({ lat, lng, accuracy: acc });
+        setGeoPermissionState("granted");
+      } catch {
+        // use existing or fallback coordinates
       }
+    }
+
+    try {
+      const address = await reverseGeocode(lat, lng) || currentAddress;
 
       // 1. Create Session in Convex
       const result = await startSession({
@@ -152,8 +256,8 @@ export default function RashaUserApp() {
         medium: callMode,
         latitude: lat,
         longitude: lng,
-        accuracyM: 10,
-        locationAddress: currentAddress,
+        accuracyM: Math.round(acc),
+        locationAddress: address,
         batteryLevel,
         isCharging: false,
       });
@@ -175,14 +279,18 @@ export default function RashaUserApp() {
   };
 
   const handleSos = async () => {
+    const lat = gpsCoords?.lat ?? 12.9716;
+    const lng = gpsCoords?.lng ?? 77.6412;
+    const acc = gpsCoords?.accuracy ?? 10;
+
     if (!sessionId) {
       const res = await startSession({
         userName,
         userPhone,
         medium: "telephony",
-        latitude: gpsCoords?.lat ?? 12.9716,
-        longitude: gpsCoords?.lng ?? 77.6412,
-        accuracyM: 8,
+        latitude: lat,
+        longitude: lng,
+        accuracyM: Math.round(acc),
         locationAddress: currentAddress,
         batteryLevel,
       });
@@ -200,7 +308,6 @@ export default function RashaUserApp() {
 
   return (
     <div className="bg-[#fbf9f2] text-[#1b1c18] antialiased min-h-screen flex flex-col items-center justify-between font-sans selection:bg-[#baeed9] selection:text-[#002117]">
-      
       {/* Mobile Safe Container */}
       <div className="w-full max-w-md min-h-screen bg-[#fbf9f2] flex flex-col justify-between relative shadow-2xl border-x border-[#e4e2dc]/60">
         
@@ -219,7 +326,9 @@ export default function RashaUserApp() {
                   {isSessionActive ? "Watch Active" : "Protected"}
                 </span>
               </div>
-              <span className="text-xs text-[#404945] font-medium leading-none">Indiranagar</span>
+              <span className="text-xs text-[#404945] font-medium leading-none">
+                {geoPermissionState === "granted" ? "GPS Locked" : "Indiranagar"}
+              </span>
             </div>
           </div>
 
@@ -240,8 +349,33 @@ export default function RashaUserApp() {
         </header>
 
         {/* 2. MAIN BODY CONTENT */}
-        <main className="flex-1 flex flex-col justify-center px-4 py-6 gap-5">
+        <main className="flex-1 flex flex-col justify-center px-4 py-5 gap-4">
           
+          {/* Geolocation Permission Request Banner (if prompt or denied) */}
+          {geoPermissionState === "denied" && (
+            <div className="bg-[#ffdad6] text-[#93000a] p-3 rounded-xl text-xs flex items-center gap-2.5 border border-[#ba1a1a]/30">
+              <AlertTriangle className="w-4 h-4 text-[#ba1a1a] shrink-0" />
+              <div className="flex-1 text-[11px] leading-tight">
+                <strong>Location is blocked in browser settings.</strong> Please allow location access so Hoysala 112 units can track you.
+              </div>
+            </div>
+          )}
+
+          {geoPermissionState === "prompt" && (
+            <div className="bg-[#f0eee7] border border-[#1b4d3e]/30 p-3 rounded-2xl flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-[#003629] animate-spin" />
+                <span className="text-xs text-[#003629] font-medium">Enable real-time GPS for patrol routing</span>
+              </div>
+              <button
+                onClick={requestLocation}
+                className="px-2.5 py-1 bg-[#003629] hover:bg-[#1b4d3e] text-white rounded-lg text-xs font-bold transition-all shadow-xs"
+              >
+                Allow GPS
+              </button>
+            </div>
+          )}
+
           {/* Greeting */}
           <div className="text-center space-y-1">
             <h1 className="text-2xl font-display font-extrabold text-[#003629] tracking-tight">
@@ -320,6 +454,19 @@ export default function RashaUserApp() {
                 ></span>
               </div>
             </div>
+
+            {/* GPS Telemetry Pill */}
+            {gpsCoords && (
+              <div className="mt-2.5 pt-2 border-t border-[#f0eee7] flex items-center justify-between text-[10px] text-[#404945] font-mono">
+                <span className="flex items-center gap-1 text-[#10b981]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
+                  Live GPS Locked
+                </span>
+                <span>
+                  {gpsCoords.lat.toFixed(4)}°N, {gpsCoords.lng.toFixed(4)}°E (±{Math.round(gpsCoords.accuracy)}m)
+                </span>
+              </div>
+            )}
           </div>
 
           {/* ACTIVE CALL / AUDIO COMPANION CARD */}
@@ -384,11 +531,11 @@ export default function RashaUserApp() {
                 <div className="flex items-center gap-2 mb-1.5 text-[#baeed9]">
                   <ShieldAlert className="w-6 h-6" />
                   <span className="text-xl font-display font-bold tracking-wide text-white">
-                    {isLocating ? "Connecting..." : "I'm Feeling Unsafe"}
+                    {isLocating ? "Acquiring GPS & Dialing..." : "I'm Feeling Unsafe"}
                   </span>
                 </div>
                 <span className="text-xs text-[#8abda9] font-medium opacity-95 max-w-xs leading-normal">
-                  Tap to capture GPS, alert Suraksha 112 & start companion call
+                  Tap to stream GPS, alert Suraksha 112 & start companion call
                 </span>
               </button>
 
