@@ -53,3 +53,10 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* OpenStreetMap Tactical Dark Theme Filter (No API Key Required) */
+.leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(2.5) hue-rotate(205deg) saturate(0.4) brightness(0.75);
+}
+
+

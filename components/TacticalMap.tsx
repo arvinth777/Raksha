@@ -32,14 +32,11 @@ export default function TacticalMap({
         attributionControl: false,
       }).setView([latitude, longitude], 15);
 
-      // Dark tactical tiles (CartoDB Dark Matter)
-      L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png",
-        {
-          maxZoom: 19,
-          subdomains: "abcd",
-        }
-      ).addTo(map);
+      // OpenStreetMap Tiles (Free, No API key needed)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors',
+      }).addTo(map);
 
       // Add Zoom Controls
       L.control.zoom({ position: "bottomright" }).addTo(map);
@@ -143,3 +140,4 @@ export default function TacticalMap({
     </div>
   );
 }
+

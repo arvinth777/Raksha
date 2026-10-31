@@ -1,10 +1,28 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Link from "next/navigation";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
+import {
+  MapPin,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Phone,
+  PhoneCall,
+  PhoneOff,
+  BatteryCharging,
+  CheckCircle2,
+  AlertTriangle,
+  Lock,
+  Radio,
+  Siren,
+  Timer,
+  LayoutDashboard,
+  ExternalLink,
+  Sparkles,
+} from "lucide-react";
 
 export default function RashaUserApp() {
   const [userName] = useState("Sreenithi");
@@ -63,7 +81,6 @@ export default function RashaUserApp() {
         const { latitude, longitude, accuracy } = pos.coords;
         setGpsCoords({ lat: latitude, lng: longitude });
 
-        // Reverse geocode approximation or default address
         const addr = `Near Metro Pillar ${Math.floor(longitude * 100) % 200}, Indiranagar 100ft Rd`;
         setCurrentAddress(addr);
 
@@ -80,7 +97,6 @@ export default function RashaUserApp() {
       },
       (err) => {
         console.warn("GPS watch position notice:", err.message);
-        // Fallback default coordinates for Bengaluru
         setGpsCoords({ lat: 12.9716, lng: 77.6412 });
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
@@ -114,7 +130,6 @@ export default function RashaUserApp() {
       let lat = gpsCoords?.lat ?? 12.9716;
       let lng = gpsCoords?.lng ?? 77.6412;
 
-      // Try quick fresh GPS fix
       if (navigator.geolocation) {
         try {
           const freshPos = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -126,7 +141,7 @@ export default function RashaUserApp() {
           lat = freshPos.coords.latitude;
           lng = freshPos.coords.longitude;
         } catch {
-          // Keep defaults if timeout
+          // fallback coordinates
         }
       }
 
@@ -161,7 +176,6 @@ export default function RashaUserApp() {
 
   const handleSos = async () => {
     if (!sessionId) {
-      // Create session directly on SOS if not active
       const res = await startSession({
         userName,
         userPhone,
@@ -185,163 +199,159 @@ export default function RashaUserApp() {
     session.safetyState !== "safe";
 
   return (
-    <div className="bg-surface text-on-surface antialiased min-h-screen flex justify-center selection:bg-primary-fixed selection:text-on-primary-fixed font-sans text-sm">
-      {/* Mobile Safe Framing Canvas */}
-      <div className="w-full max-w-md min-h-screen bg-surface flex flex-col justify-between relative pb-16 pt-20 px-4">
+    <div className="bg-[#fbf9f2] text-[#1b1c18] antialiased min-h-screen flex flex-col items-center justify-between font-sans selection:bg-[#baeed9] selection:text-[#002117]">
+      
+      {/* Mobile Safe Container */}
+      <div className="w-full max-w-md min-h-screen bg-[#fbf9f2] flex flex-col justify-between relative shadow-2xl border-x border-[#e4e2dc]/60">
         
-        {/* TOP APP BAR */}
-        <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-surface/85 backdrop-blur-md border-b border-outline-variant/30 shadow-xs">
+        {/* 1. TOP APP BAR */}
+        <header className="sticky top-0 z-40 w-full flex justify-between items-center px-4 h-16 bg-[#fbf9f2]/90 backdrop-blur-md border-b border-[#c0c9c3]/30">
           {/* User Profile Badge */}
-          <div className="flex items-center gap-2">
-            <div className="relative w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center border border-outline-variant/40 text-primary font-bold text-base overflow-hidden">
+          <div className="flex items-center gap-2.5">
+            <div className="relative w-9 h-9 rounded-full bg-[#1b4d3e] text-[#baeed9] font-bold text-sm flex items-center justify-center border border-[#1b4d3e]/20 shadow-xs">
               <span>{userName[0]}</span>
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-primary-fixed-dim border-2 border-surface-container-lowest rounded-full"></span>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#10b981] border-2 border-[#ffffff] rounded-full"></span>
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block animate-pulse"></span>
-                <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-[#10b981] inline-block animate-pulse"></span>
+                <span className="text-[10px] font-bold text-[#003629] uppercase tracking-wider">
                   {isSessionActive ? "Watch Active" : "Protected"}
                 </span>
               </div>
-              <span className="text-xs text-on-surface-variant font-medium">Indiranagar</span>
+              <span className="text-xs text-[#404945] font-medium leading-none">Indiranagar</span>
             </div>
           </div>
 
           {/* Center Brand Wordmark */}
-          <div className="text-xl font-display font-extrabold text-primary tracking-tight">
+          <div className="text-xl font-display font-black text-[#003629] tracking-tight">
             Rasha
           </div>
 
-          {/* Trailing Controls */}
-          <div className="flex items-center gap-1.5">
-            {/* Quick Switch to Ops Dashboard */}
-            <a
-              href="/ops"
-              className="px-2.5 py-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-primary text-xs font-semibold flex items-center gap-1 border border-outline-variant/40"
-              title="Open Police / Admin Ops Dashboard"
-            >
-              <span className="material-symbols-outlined text-sm">local_police</span>
-              <span>Ops</span>
-            </a>
-          </div>
+          {/* Quick Switch to Ops Dashboard */}
+          <a
+            href="/ops"
+            className="px-2.5 py-1.5 rounded-full bg-[#f0eee7] hover:bg-[#eae8e1] text-[#003629] text-xs font-semibold flex items-center gap-1.5 border border-[#c0c9c3]/40 transition-colors shadow-xs"
+            title="Open 112 Police Ops Dashboard"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5 text-[#1b4d3e]" />
+            <span className="font-bold">Ops 112</span>
+          </a>
         </header>
 
-        {/* MAIN BODY AREA */}
-        <main className="flex-1 flex flex-col justify-center gap-5 w-full max-w-sm mx-auto my-auto py-2">
+        {/* 2. MAIN BODY CONTENT */}
+        <main className="flex-1 flex flex-col justify-center px-4 py-6 gap-5">
           
-          {/* 1. Greeting */}
+          {/* Greeting */}
           <div className="text-center space-y-1">
-            <h1 className="text-2xl font-display font-bold text-primary tracking-tight">
+            <h1 className="text-2xl font-display font-extrabold text-[#003629] tracking-tight">
               Namaskara, {userName}
             </h1>
-            <p className="text-sm text-on-surface-variant max-w-xs mx-auto leading-relaxed">
+            <p className="text-xs text-[#404945] max-w-xs mx-auto leading-relaxed">
               {isSessionActive
                 ? "Live companion watch is active. We are walking with you."
                 : "You are safely connected. We are keeping gentle watch on your path."}
             </p>
           </div>
 
-          {/* 2. LIVE SAFETY STATUS CARD */}
-          <div className="bg-surface-container-lowest rounded-2xl p-4 border border-outline-variant/40 relative overflow-hidden shadow-sm">
+          {/* LIVE SAFETY STATUS CARD */}
+          <div className="bg-[#ffffff] rounded-2xl p-4 border border-[#c0c9c3]/40 relative overflow-hidden shadow-sm">
             <div
               className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl ${
                 session?.safetyState === "sos_active"
-                  ? "bg-red-600"
+                  ? "bg-[#ba1a1a]"
                   : isSessionActive
-                  ? "bg-emerald-600 animate-pulse"
-                  : "bg-primary-container"
+                  ? "bg-[#10b981] animate-pulse"
+                  : "bg-[#1b4d3e]"
               }`}
             ></div>
+
             <div className="flex items-center justify-between pl-2">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-primary shrink-0 mt-0.5">
-                  <span
-                    className={`material-symbols-filled text-xl ${
-                      session?.safetyState === "sos_active" ? "text-red-600" : "text-primary"
-                    }`}
-                  >
-                    fmd_good
-                  </span>
+                <div className="w-10 h-10 rounded-full bg-[#f6f4ed] flex items-center justify-center shrink-0 mt-0.5 text-[#003629]">
+                  {session?.safetyState === "sos_active" ? (
+                    <ShieldAlert className="w-5 h-5 text-[#ba1a1a]" />
+                  ) : (
+                    <MapPin className="w-5 h-5 text-[#003629]" />
+                  )}
                 </div>
+
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-primary">
+                    <span className="text-xs font-bold text-[#003629]">
                       {session?.safetyState === "sos_active"
                         ? "🚨 EMERGENCY SOS ACTIVE"
                         : isSessionActive
                         ? "Live Watch Active"
                         : "Guard Ready"}
                     </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#baeed9] text-[#002117]">
                       {isSessionActive ? "STREAMING" : "STANDBY"}
                     </span>
                   </div>
-                  <p className="text-xs text-on-surface font-semibold pt-0.5 line-clamp-1">
+
+                  <p className="text-xs text-[#1b1c18] font-semibold pt-0.5 line-clamp-1">
                     {session?.locationAddress || currentAddress}
                   </p>
-                  <div className="flex items-center gap-2 pt-1 text-[11px] text-on-surface-variant font-medium">
+
+                  <div className="flex items-center gap-2.5 pt-1 text-[11px] text-[#404945] font-medium">
                     <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs text-primary-container">
-                        battery_charging_full
-                      </span>
+                      <BatteryCharging className="w-3.5 h-3.5 text-[#1b4d3e]" />
                       {batteryLevel}%
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs text-primary-container">
-                        verified_user
-                      </span>
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#1b4d3e]" />
                       Suraksha 112
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col items-end shrink-0 pl-2">
+              <div className="flex flex-col items-end shrink-0 pl-1">
                 <span
                   className={`w-3 h-3 rounded-full ${
                     session?.safetyState === "sos_active"
                       ? "bg-red-500 ring-4 ring-red-500/30 animate-ping"
                       : isSessionActive
                       ? "bg-emerald-500 ring-4 ring-emerald-500/30 animate-pulse"
-                      : "bg-primary-fixed-dim ring-4 ring-primary-fixed/30"
+                      : "bg-[#9ed1bd] ring-4 ring-[#baeed9]/40"
                   }`}
                 ></span>
               </div>
             </div>
           </div>
 
-          {/* 3. ACTIVE CALL / AUDIO COMPANION BANNER (when session is active) */}
+          {/* ACTIVE CALL / AUDIO COMPANION CARD */}
           {isSessionActive && (
-            <div className="bg-primary/95 text-on-primary rounded-2xl p-4 shadow-md border border-primary-fixed/30 space-y-3">
+            <div className="bg-[#003629] text-[#ffffff] rounded-2xl p-4 shadow-md border border-[#baeed9]/30 space-y-3 animate-in fade-in">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary-fixed">
-                    <span className="material-symbols-outlined text-lg animate-pulse">
-                      phone_in_talk
-                    </span>
+                  <span className="w-8 h-8 rounded-full bg-[#1b4d3e] flex items-center justify-center text-[#baeed9]">
+                    <PhoneCall className="w-4 h-4 animate-pulse" />
                   </span>
                   <div>
-                    <div className="text-xs font-bold text-primary-fixed uppercase tracking-wider">
+                    <div className="text-[10px] font-bold text-[#baeed9] uppercase tracking-wider">
                       Vaani Voice AI Companion
                     </div>
-                    <div className="text-sm font-semibold">
+                    <div className="text-xs font-semibold text-white">
                       {session?.callState === "connected" ? "Call Connected • Audio Live" : "Calling Citizen..."}
                     </div>
                   </div>
                 </div>
+
                 <button
                   onClick={() => endSession({ sessionId: session._id })}
-                  className="px-3 py-1 rounded-full bg-surface/20 hover:bg-surface/30 text-xs font-bold transition-colors"
+                  className="px-2.5 py-1 rounded-full bg-white/20 hover:bg-white/30 text-[11px] font-bold transition-colors flex items-center gap-1"
                 >
-                  End Call
+                  <PhoneOff className="w-3 h-3" />
+                  <span>End Call</span>
                 </button>
               </div>
 
               {/* Latest Transcribed Segment */}
               {transcripts && transcripts.length > 0 && (
-                <div className="bg-black/30 rounded-xl p-2.5 text-xs italic text-primary-fixed/90 border border-white/10">
+                <div className="bg-black/30 rounded-xl p-3 text-xs italic text-[#baeed9] border border-white/10 leading-relaxed">
                   <span className="font-bold uppercase tracking-wider not-italic text-[10px] text-white/70 block mb-0.5">
                     {transcripts[transcripts.length - 1].speaker}:
                   </span>
@@ -349,43 +359,41 @@ export default function RashaUserApp() {
                 </div>
               )}
 
-              {/* Action Buttons inside active call */}
-              <div className="flex items-center gap-2 pt-1">
-                <button
-                  onClick={() => reportSafe({ sessionId: session._id })}
-                  className="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
-                >
-                  <span className="material-symbols-outlined text-base">check_circle</span>
-                  I'm Safe
-                </button>
-              </div>
+              {/* Safe Response inside Call */}
+              <button
+                onClick={() => reportSafe({ sessionId: session._id })}
+                className="w-full py-2.5 px-3 rounded-xl bg-[#10b981] hover:bg-[#059669] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>I'm Safe</span>
+              </button>
             </div>
           )}
 
-          {/* 4. HERO ACTION BUTTON: "I'm Feeling Unsafe" */}
+          {/* HERO ACTION BUTTON: "I'm Feeling Unsafe" */}
           {!isSessionActive ? (
-            <div className="relative flex flex-col items-center justify-center py-2">
-              <div className="absolute inset-0 rounded-full bg-primary-container/10 blur-2xl transform scale-110 pointer-events-none"></div>
-              
+            <div className="relative flex flex-col items-center justify-center py-1">
+              <div className="absolute inset-0 rounded-full bg-[#1b4d3e]/10 blur-2xl transform scale-110 pointer-events-none"></div>
+
               <button
                 id="heroComfortBtn"
                 onClick={handleFeelingUnsafe}
                 disabled={isLocating}
-                className="group w-full bg-primary-container text-on-primary rounded-3xl py-6 px-6 flex flex-col items-center justify-center text-center shadow-lg active:scale-95 transition-all duration-200 hover:bg-primary border border-primary-container/30 animate-breathe cursor-pointer select-none"
+                className="group w-full bg-[#1b4d3e] text-[#ffffff] rounded-3xl py-6 px-6 flex flex-col items-center justify-center text-center shadow-xl active:scale-95 transition-all duration-200 hover:bg-[#003629] border border-[#1b4d3e]/30 cursor-pointer select-none"
               >
-                <div className="flex items-center gap-2.5 mb-1.5 text-primary-fixed">
-                  <span className="material-symbols-filled text-3xl">shield_with_heart</span>
-                  <span className="text-xl font-display font-bold tracking-wide text-on-primary">
-                    {isLocating ? "Locating & Connecting..." : "I'm Feeling Unsafe"}
+                <div className="flex items-center gap-2 mb-1.5 text-[#baeed9]">
+                  <ShieldAlert className="w-6 h-6" />
+                  <span className="text-xl font-display font-bold tracking-wide text-white">
+                    {isLocating ? "Connecting..." : "I'm Feeling Unsafe"}
                   </span>
                 </div>
-                <span className="text-xs text-on-primary-container font-medium opacity-90 max-w-xs">
+                <span className="text-xs text-[#8abda9] font-medium opacity-95 max-w-xs leading-normal">
                   Tap to capture GPS, alert Suraksha 112 & start companion call
                 </span>
               </button>
 
-              {/* Medium selector */}
-              <div className="flex items-center gap-3 mt-3 text-xs text-outline">
+              {/* Companion Call Medium selector */}
+              <div className="flex items-center gap-3 mt-3 text-xs text-[#707974]">
                 <label className="flex items-center gap-1.5 cursor-pointer">
                   <input
                     type="radio"
@@ -393,9 +401,9 @@ export default function RashaUserApp() {
                     value="webrtc"
                     checked={callMode === "webrtc"}
                     onChange={() => setCallMode("webrtc")}
-                    className="accent-primary"
+                    className="accent-[#003629]"
                   />
-                  <span>WebRTC Companion Audio</span>
+                  <span>WebRTC Audio</span>
                 </label>
                 <span>•</span>
                 <label className="flex items-center gap-1.5 cursor-pointer">
@@ -405,96 +413,99 @@ export default function RashaUserApp() {
                     value="telephony"
                     checked={callMode === "telephony"}
                     onChange={() => setCallMode("telephony")}
-                    className="accent-primary"
+                    className="accent-[#003629]"
                   />
-                  <span>Direct Phone Call</span>
+                  <span>Phone Call</span>
                 </label>
               </div>
 
-              <p className="text-xs text-outline mt-2 flex items-center gap-1">
-                <span className="material-symbols-outlined text-xs">lock</span>
-                Instant discreet trigger • Zero false alarms
+              <p className="text-[11px] text-[#707974] mt-2 flex items-center gap-1">
+                <Lock className="w-3 h-3 text-[#707974]" />
+                <span>Instant discreet trigger • Zero false alarms</span>
               </p>
             </div>
           ) : (
-            <div className="py-2">
+            <div className="py-1">
               <button
                 onClick={() => reportSafe({ sessionId: session._id })}
-                className="w-full py-4 rounded-2xl bg-surface-container-high hover:bg-surface-container-highest text-primary font-bold text-sm border border-outline-variant/40 flex items-center justify-center gap-2 transition-all shadow-xs"
+                className="w-full py-3.5 rounded-2xl bg-[#eae8e1] hover:bg-[#e4e2dc] text-[#003629] font-bold text-xs border border-[#c0c9c3]/50 flex items-center justify-center gap-2 transition-all shadow-xs"
               >
-                <span className="material-symbols-outlined text-lg">check_circle</span>
-                Confirm "I Am Safe" & Resolve Incident
+                <CheckCircle2 className="w-4 h-4 text-[#10b981]" />
+                <span>Confirm "I Am Safe" & Resolve Incident</span>
               </button>
             </div>
           )}
 
-          {/* 5. CRITICAL ONE-TAP EMERGENCY SOS BUTTON */}
-          <div className="pt-2">
+          {/* CRITICAL ONE-TAP EMERGENCY SOS BUTTON */}
+          <div className="pt-1">
             <button
               id="sosButton"
               onClick={handleSos}
-              className="w-full py-4 px-5 rounded-2xl bg-error hover:bg-red-700 text-white font-display font-bold text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all duration-150 uppercase tracking-wider"
+              className="w-full py-4 px-5 rounded-2xl bg-[#ba1a1a] hover:bg-red-700 active:scale-95 text-white font-display font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all uppercase tracking-wider"
             >
-              <span className="material-symbols-filled text-xl">e911_emergency</span>
+              <Siren className="w-5 h-5 text-white animate-pulse" />
               <span>ONE-TAP EMERGENCY SOS (112)</span>
             </button>
-            <p className="text-[11px] text-center text-outline-variant mt-1.5">
+            <p className="text-[11px] text-center text-[#707974] mt-1.5">
               Instantly notifies nearest Hoysala Patrol and Emergency Contacts
             </p>
           </div>
 
         </main>
 
-        {/* BOTTOM NAVIGATION / FOOTER */}
-        <footer className="fixed bottom-0 left-0 w-full z-40 bg-surface/90 backdrop-blur-md border-t border-outline-variant/30 py-2.5 px-6 flex justify-around items-center text-xs text-on-surface-variant">
-          <div className="flex items-center gap-1 text-primary font-bold">
-            <span className="material-symbols-filled text-lg">shield</span>
+        {/* 3. BOTTOM FOOTER NAVIGATION */}
+        <footer className="sticky bottom-0 z-40 bg-[#fbf9f2]/95 backdrop-blur-md border-t border-[#c0c9c3]/30 py-2.5 px-6 flex justify-around items-center text-xs text-[#404945]">
+          <div className="flex items-center gap-1.5 text-[#003629] font-bold">
+            <Shield className="w-4 h-4 text-[#003629]" />
             <span>Rasha Shield</span>
           </div>
+
           <a
             href="/ops"
-            className="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors"
+            className="flex items-center gap-1.5 text-[#404945] hover:text-[#003629] font-medium transition-colors"
           >
-            <span className="material-symbols-outlined text-lg">dashboard</span>
+            <LayoutDashboard className="w-4 h-4" />
             <span>Admin Ops</span>
           </a>
-          <div className="flex items-center gap-1 text-on-surface-variant">
-            <span className="material-symbols-outlined text-lg">support_agent</span>
+
+          <div className="flex items-center gap-1.5 text-[#404945] font-medium">
+            <Radio className="w-4 h-4 text-[#10b981]" />
             <span>112 Patrol</span>
           </div>
         </footer>
 
-        {/* 6. SAFETY CHECK-IN COUNTDOWN SHEET (Modal) */}
+        {/* 4. SAFETY CHECK-IN COUNTDOWN SHEET */}
         {activeCheckIn && activeCheckIn.status === "pending" && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-sm bg-surface-container-lowest rounded-3xl p-6 shadow-2xl border border-outline-variant/40 space-y-4">
+            <div className="w-full max-w-sm bg-[#ffffff] rounded-3xl p-6 shadow-2xl border border-[#c0c9c3]/50 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-amber-500 animate-ping"></span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
                   <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
                     Safety Check-In
                   </span>
                 </div>
-                <div className="text-lg font-display font-extrabold text-amber-600">
-                  {countdown}s
+                <div className="text-lg font-display font-extrabold text-amber-600 flex items-center gap-1">
+                  <Timer className="w-4 h-4" />
+                  <span>{countdown}s</span>
                 </div>
               </div>
 
-              <div className="text-center space-y-1.5 py-1">
-                <h3 className="text-lg font-display font-bold text-primary">
+              <div className="text-center space-y-1 py-1">
+                <h3 className="text-lg font-display font-bold text-[#003629]">
                   Are you feeling safe?
                 </h3>
-                <p className="text-xs text-on-surface-variant leading-relaxed">
+                <p className="text-xs text-[#404945] leading-relaxed">
                   {activeCheckIn.reason || "Periodic safety confirmation check."}
                   <br />
-                  <span className="font-semibold text-error">
+                  <span className="font-semibold text-[#ba1a1a]">
                     If no response in {countdown}s, Hoysala Patrol will be dispatched.
                   </span>
                 </p>
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-[#f0eee7] rounded-full h-2 overflow-hidden">
                 <div
                   className="bg-amber-500 h-full transition-all duration-1000 ease-linear"
                   style={{ width: `${(countdown / 30) * 100}%` }}
@@ -505,17 +516,17 @@ export default function RashaUserApp() {
               <div className="flex gap-2.5 pt-2">
                 <button
                   onClick={() => respondCheckIn({ checkInId: activeCheckIn._id, response: "safe" })}
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  className="flex-1 py-3 px-3 rounded-xl bg-[#003629] hover:bg-[#1b4d3e] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-base">check_circle</span>
-                  I'm Safe
+                  <CheckCircle2 className="w-4 h-4 text-[#baeed9]" />
+                  <span>I'm Safe</span>
                 </button>
                 <button
                   onClick={() => respondCheckIn({ checkInId: activeCheckIn._id, response: "help" })}
-                  className="flex-1 py-3.5 px-4 rounded-xl bg-error hover:bg-red-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  className="flex-1 py-3 px-3 rounded-xl bg-[#ba1a1a] hover:bg-red-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
                 >
-                  <span className="material-symbols-filled text-base">warning</span>
-                  Send SOS
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Send SOS</span>
                 </button>
               </div>
             </div>
