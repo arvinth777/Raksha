@@ -375,7 +375,9 @@ function RakshaOpsDashboard() {
                 <div className="text-center py-6 text-ink-3 text-xs">
                   {selectedSession?.mode === "demo"
                     ? "No speech yet. Type a line below to simulate the caller."
-                    : "Waiting for live captions (is npm run worker running?)"}
+                    : selectedSession?.mode === "live"
+                      ? "No live transcript for phone calls (Vaani doesn't provide phone captions). Use an in-app call to see speech here."
+                      : "Waiting for the caller to speak…"}
                 </div>
               ) : (
                 transcripts.map((t) => (
