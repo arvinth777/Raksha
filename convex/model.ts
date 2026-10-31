@@ -1,24 +1,7 @@
 import { ConvexError } from "convex/values";
-import type { MutationCtx, QueryCtx } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
-export async function identity(ctx: QueryCtx | MutationCtx) {
-  const user = await ctx.auth.getUserIdentity();
-  if (!user) throw new ConvexError("UNAUTHENTICATED");
-  if (
-    !(process.env.TEST_AUTH_SUBJECTS ?? "")
-      .split(",")
-      .includes(user.tokenIdentifier)
-  )
-    throw new ConvexError("TEST_USER_NOT_ALLOWED");
-  return user.tokenIdentifier;
-}
-export async function owned(ctx: QueryCtx | MutationCtx, id: Id<"sessions">) {
-  const owner = await identity(ctx);
-  const session = await ctx.db.get(id);
-  if (!session || session.owner !== owner) throw new ConvexError("NOT_FOUND");
-  return session;
-}
 export async function event(
   ctx: MutationCtx,
   sessionId: Id<"sessions">,

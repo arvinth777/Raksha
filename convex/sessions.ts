@@ -1,37 +1,13 @@
 import { v } from "convex/values";
-import {
-  query,
-  mutation,
-  internalMutation,
-  internalQuery,
-  internalAction,
-} from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
+import type { QueryCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import * as model from "./model";
 import { sessionView } from "./views";
-export const start = mutation({
-  args: { clientRequestId: v.string(), autoEscalate: v.boolean() },
-  returns: v.id("sessions"),
-  handler: async (ctx, a) =>
-    model.start(
-      ctx,
-      await model.identity(ctx),
-      a.clientRequestId,
-      a.autoEscalate,
-      "live",
-    ),
-});
-export const get = query({
-  args: { sessionId: v.id("sessions") },
-  returns: sessionView,
-  handler: async (ctx, a) => {
-    await model.owned(ctx, a.sessionId);
-    return snapshot(ctx, a.sessionId);
-  },
-});
 export async function snapshot(
-  ctx: Parameters<typeof model.owned>[0],
-  sessionId: Parameters<typeof model.owned>[1],
+  ctx: QueryCtx,
+  sessionId: Id<"sessions">,
 ) {
   const s = await ctx.db.get(sessionId);
   if (!s) return null;
@@ -66,29 +42,6 @@ export async function snapshot(
       .take(50),
   };
 }
-export const triggerSos = mutation({
-  args: { sessionId: v.id("sessions") },
-  returns: v.id("incidents"),
-  handler: async (ctx, a) => {
-    await model.owned(ctx, a.sessionId);
-    return model.sos(ctx, a.sessionId, "Manual SOS");
-  },
-});
-export const respond = mutation({
-  args: {
-    checkInId: v.id("checkIns"),
-    expectedVersion: v.number(),
-    response: v.union(v.literal("safe"), v.literal("help")),
-  },
-  returns: v.null(),
-  handler: async (ctx, a) => {
-    const c = await ctx.db.get(a.checkInId);
-    if (!c) throw Error("NOT_FOUND");
-    await model.owned(ctx, c.sessionId);
-    await model.respond(ctx, a.checkInId, a.expectedVersion, a.response);
-    return null;
-  },
-});
 export const expire = internalMutation({
   args: { checkInId: v.id("checkIns"), version: v.number() },
   returns: v.null(),
@@ -202,10 +155,4 @@ export const testEnd = internalMutation({
     );
     return null;
   },
-});
-
-export const serverTime = internalAction({
-  args: {},
-  returns: v.number(),
-  handler: async () => Date.now(),
 });

@@ -20,7 +20,6 @@ Requires Node.js 22+.
 npm ci
 npx convex dev --once          # push backend functions to your dev deployment
 npm run dev                    # http://127.0.0.1:3000
-npm run worker                 # optional: live captions for phone calls
 npm run check                  # typecheck + backend tests
 ```
 

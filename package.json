@@ -5,12 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
-    "console": "tsx scripts/test-console-server.ts",
-    "worker": "tsx scripts/caption-worker.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test",
-    "console:cli": "tsx scripts/console.ts",
     "backend": "convex dev",
     "build": "next build",
     "start": "next start --hostname 127.0.0.1"
@@ -40,7 +37,6 @@
     "tailwindcss": "^3.4.14",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vite": "^7.3.7",
     "vitest": "^5.0.5"
   },
   "engines": {

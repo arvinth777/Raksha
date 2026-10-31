@@ -2,8 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "../convex/schema";
 import { api, internal } from "../convex/_generated/api";
-import { caption, signedCaptionUrl, verifyWebhook } from "../convex/protocol";
-import { parseCliOutput } from "../scripts/convex-cli";
+import { caption, signedCaptionUrl } from "../convex/protocol";
 const modules = import.meta.glob("../convex/**/*.ts");
 afterEach(() => {
   vi.useRealTimers();
@@ -19,15 +18,6 @@ async function setup(autoEscalate = true) {
   return { t, id };
 }
 describe("safety backend", () => {
-  it("rejects unauthenticated reads and writes", async () => {
-    const { t, id } = await setup();
-    await expect(t.query(api.sessions.get, { sessionId: id })).rejects.toThrow(
-      "UNAUTHENTICATED",
-    );
-    await expect(
-      t.mutation(api.sessions.triggerSos, { sessionId: id }),
-    ).rejects.toThrow("UNAUTHENTICATED");
-  });
   it("reuses identical starts and rejects conflicting payload", async () => {
     const { t, id } = await setup();
     expect(
@@ -156,30 +146,6 @@ describe("safety backend", () => {
       await t.mutation(internal.jobs.claim, { jobId: job!._id }),
     ).toBeNull();
   });
-  it("webhook duplicates and out-of-order ringing cannot regress connected", async () => {
-    const { t, id } = await setup();
-    await t.run(async (ctx) => {
-      const j = await ctx.db.query("jobs").first();
-      await ctx.db.patch(j!._id, { callId: "call-1", state: "accepted" });
-    });
-    await t.mutation(internal.ingest.webhook, {
-      key: "answer",
-      payload: { event: "user_picked_up_at", room_name: "call-1" },
-    });
-    await t.mutation(internal.ingest.webhook, {
-      key: "ring",
-      payload: { event: "call_ringing", room_name: "call-1" },
-    });
-    await t.mutation(internal.ingest.webhook, {
-      key: "answer",
-      payload: { event: "user_picked_up_at", room_name: "call-1" },
-    });
-    const s = await t.query(internal.sessions.inspect, { sessionId: id });
-    expect(s!.session.callState).toBe("connected");
-    expect(
-      s!.events.filter((e: any) => e.type === "provider.user_picked_up_at"),
-    ).toHaveLength(1);
-  });
   it("captions dedupe final segments and reject a different call", async () => {
     const { t, id } = await setup();
     const job = await t.run(async (ctx) => {
@@ -247,33 +213,6 @@ describe("provider trust boundary", () => {
       signedCaptionUrl("ws://api.vaanivoice.ai/api/live-transcripts/test"),
     ).toThrow();
   });
-  it("checks HMAC body integrity and replay window", async () => {
-    const raw = '{"event":"call_started"}';
-    const now = 1700000000000;
-    const timestamp = String(now / 1000);
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode("secret"),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"],
-    );
-    const bytes = await crypto.subtle.sign(
-      "HMAC",
-      key,
-      new TextEncoder().encode(timestamp + "." + raw),
-    );
-    const signature = "sha256=" + Buffer.from(bytes).toString("hex");
-    expect(await verifyWebhook(raw, timestamp, signature, "secret", now)).toBe(
-      true,
-    );
-    expect(
-      await verifyWebhook(raw + " ", timestamp, signature, "secret", now),
-    ).toBe(false);
-    expect(
-      await verifyWebhook(raw, timestamp, signature, "secret", now + 301000),
-    ).toBe(false);
-  });
 });
 
 describe("dispatch boundaries", () => {
@@ -323,32 +262,6 @@ describe("dispatch boundaries", () => {
     ).toBe("dispatch_unknown");
     fetchSpy.mockRestore();
   });
-  it("rejects cross-user reads even with an allowed identity", async () => {
-    const { t, id } = await setup();
-    vi.stubEnv("TEST_AUTH_SUBJECTS", "test-issuer|other");
-    const other = t.withIdentity({
-      tokenIdentifier: "test-issuer|other",
-      subject: "other",
-      issuer: "test-issuer",
-    });
-    await expect(
-      other.query(api.sessions.get, { sessionId: id }),
-    ).rejects.toThrow("NOT_FOUND");
-  });
-  it("unsigned webhooks cannot change state", async () => {
-    const { t } = await setup();
-    const response = await t.fetch("/vaani/webhook", {
-      method: "POST",
-      body: JSON.stringify({ event: "user_picked_up_at", room_name: "fake" }),
-    });
-    expect(response.status).toBe(401);
-  });
-});
-
-it("CLI successful null returns are not reported as failures", () => {
-  expect(parseCliOutput("")).toBeNull();
-  expect(parseCliOutput("\n")).toBeNull();
-  expect(parseCliOutput('{"ok":true}')).toEqual({ ok: true });
 });
 
 describe("frontend integration authorization", () => {

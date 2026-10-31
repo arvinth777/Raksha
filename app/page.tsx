@@ -8,23 +8,12 @@ import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import {
   MapPin,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-  Phone,
   PhoneCall,
   PhoneOff,
-  BatteryCharging,
   CheckCircle2,
   AlertTriangle,
-  Lock,
-  Radio,
   Siren,
   Timer,
-  LayoutDashboard,
-  LocateFixed,
-  Navigation,
-  Compass,
 } from "lucide-react";
 
 export default function RakshaUserApp() {

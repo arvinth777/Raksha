@@ -160,34 +160,3 @@ export const captionTarget = internalQuery({
     return { url: j.captionUrl };
   },
 });
-export const streams = internalQuery({
-  args: {},
-  returns: v.array(v.object({ jobId: v.id("jobs"), url: v.string() })),
-  handler: async (ctx) => {
-    const rows = (
-      await Promise.all(
-        ["accepted", "answered"].map((state) =>
-          ctx.db
-            .query("jobs")
-            .withIndex("by_state", (q) =>
-              q.eq("state", state as "accepted" | "answered"),
-            )
-            .take(50),
-        ),
-      )
-    ).flat();
-    const result = [];
-    for (const j of rows) {
-      const s = await ctx.db.get(j.sessionId);
-      if (
-        j.purpose === "user" &&
-        j.captionUrl &&
-        s &&
-        !s.ended &&
-        !["ended", "failed", "no_answer", "rejected"].includes(s.callState)
-      )
-        result.push({ jobId: j._id, url: j.captionUrl });
-    }
-    return result;
-  },
-});

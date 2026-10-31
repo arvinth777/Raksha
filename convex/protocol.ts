@@ -59,39 +59,6 @@ export function rtcUrl(value: unknown): string {
   url.protocol = "wss:";
   return url.toString().replace(/\/$/, "");
 }
-export async function verifyWebhook(
-  raw: string,
-  timestamp: string,
-  signature: string,
-  secret: string,
-  now = Date.now(),
-) {
-  if (
-    !/^\d+$/.test(timestamp) ||
-    Math.abs(now - Number(timestamp) * 1000) > 300000 ||
-    !/^sha256=[0-9a-f]{64}$/i.test(signature)
-  )
-    return false;
-  const bytes = new Uint8Array(
-    signature
-      .slice(7)
-      .match(/../g)!
-      .map((x) => parseInt(x, 16)),
-  );
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["verify"],
-  );
-  return crypto.subtle.verify(
-    "HMAC",
-    key,
-    bytes,
-    new TextEncoder().encode(timestamp + "." + raw),
-  );
-}
 export const terminalCalls = new Set([
   "rejected",
   "no_answer",
