@@ -80,6 +80,27 @@ export const note = internalMutation({
     return null;
   },
 });
+export const captionTarget = internalQuery({
+  args: { jobId: v.id("jobs") },
+  returns: v.union(v.null(), v.object({ url: v.string() })),
+  handler: async (ctx, a) => {
+    const j = await ctx.db.get(a.jobId);
+    if (
+      !j?.captionUrl ||
+      j.purpose !== "user" ||
+      !["accepted", "answered"].includes(j.state)
+    )
+      return null;
+    const s = await ctx.db.get(j.sessionId);
+    if (
+      !s ||
+      s.ended ||
+      ["ended", "failed", "no_answer", "rejected"].includes(s.callState)
+    )
+      return null;
+    return { url: j.captionUrl };
+  },
+});
 export const streams = internalQuery({
   args: {},
   returns: v.array(v.object({ jobId: v.id("jobs"), url: v.string() })),

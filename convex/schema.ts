@@ -74,6 +74,9 @@ export default defineSchema({
         sample: v.optional(v.boolean()),
       }),
     ),
+    battery: v.optional(
+      v.object({ level: v.number(), charging: v.boolean(), at: v.number() }),
+    ),
   })
     .index("by_owner", ["owner"])
     .index("by_owner_and_requestId", ["owner", "requestId"]),

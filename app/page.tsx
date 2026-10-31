@@ -143,6 +143,52 @@ export default function RakshaUserApp() {
     );
     return () => navigator.geolocation.clearWatch(watch);
   }, [geoPermissionState, sessionId, session?.ended]);
+  // After a reload, browsers keep the permission; pick GPS back up without a tap.
+  useEffect(() => {
+    navigator.permissions
+      ?.query({ name: "geolocation" as PermissionName })
+      .then((p) => {
+        if (p.state === "granted") requestLocation();
+        else if (p.state === "denied") setGeoPermissionState("denied");
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // Battery Status API (Chrome/Android; not Safari): sent with the session, never invented.
+  const reportDevice = useMutation(api.web.device);
+  useEffect(() => {
+    const nav = navigator as Navigator & {
+      getBattery?: () => Promise<{
+        level: number;
+        charging: boolean;
+        addEventListener: (t: string, f: () => void) => void;
+        removeEventListener: (t: string, f: () => void) => void;
+      }>;
+    };
+    if (!sessionId || session?.ended || !nav.getBattery) return;
+    let battery: Awaited<
+      ReturnType<NonNullable<typeof nav.getBattery>>
+    > | null = null;
+    const send = () =>
+      battery &&
+      void reportDevice({
+        sessionId,
+        batteryLevel: battery.level,
+        charging: battery.charging,
+      }).catch(() => {});
+    void nav.getBattery().then((b) => {
+      battery = b;
+      send();
+      b.addEventListener("levelchange", send);
+      b.addEventListener("chargingchange", send);
+    });
+    const t = setInterval(send, 60000);
+    return () => {
+      clearInterval(t);
+      battery?.removeEventListener("levelchange", send);
+      battery?.removeEventListener("chargingchange", send);
+    };
+  }, [sessionId, session?.ended, reportDevice]);
   const lastSent = useRef(0);
   useEffect(() => {
     if (

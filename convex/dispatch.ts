@@ -117,6 +117,14 @@ export const run = internalAction({
         captionUrl = rawCaptions ? signedCaptionUrl(rawCaptions) : undefined;
       } catch {
         // A malformed caption link must not turn a placed call into "unknown".
+        try {
+          const u = new URL(String(rawCaptions));
+          await ctx.runMutation(internal.jobs.note, {
+            jobId,
+            type: "dispatch.caption_url_rejected",
+            detail: `${u.protocol}//${u.host}${u.pathname.split("/").slice(0, 4).join("/")} token:${u.searchParams.has("token")}`,
+          });
+        } catch {}
       }
       // Field names only (no values) so a missing caption link can be diagnosed.
       if (!captionUrl)
@@ -138,6 +146,9 @@ export const run = internalAction({
           : {}),
         toolToken,
       });
+      // Phone calls: read Vaani's caption stream server-side (in-app calls relay from the browser).
+      if (captionUrl && !web && work.purpose === "user")
+        await ctx.scheduler.runAfter(0, internal.captions.relay, { jobId });
     } catch (e) {
       await ctx.runMutation(internal.jobs.finish, {
         jobId,

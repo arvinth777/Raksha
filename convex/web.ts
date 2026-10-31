@@ -309,6 +309,28 @@ export const profile = query({
     return model.profile("live");
   },
 });
+export const device = mutation({
+  args: {
+    sessionId: v.id("sessions"),
+    batteryLevel: v.number(),
+    charging: v.boolean(),
+  },
+  returns: v.null(),
+  handler: async (ctx, a) => {
+    const s = await own(ctx, a.sessionId);
+    if (s.ended) return null;
+    if (
+      !Number.isFinite(a.batteryLevel) ||
+      a.batteryLevel < 0 ||
+      a.batteryLevel > 1
+    )
+      throw new ConvexError("INVALID_BATTERY");
+    await ctx.db.patch(s._id, {
+      battery: { level: a.batteryLevel, charging: a.charging, at: Date.now() },
+    });
+    return null;
+  },
+});
 export const list = query({
   args: {},
   returns: v.array(sessionView),

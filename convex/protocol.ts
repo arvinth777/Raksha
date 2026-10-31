@@ -34,13 +34,18 @@ export function caption(value: unknown) {
 export function signedCaptionUrl(value: unknown): string {
   const raw = text(value, 8000);
   const url = new URL(raw);
+  // Like connection_url, Vaani may return https:// where its docs say wss://.
   if (
-    url.protocol !== "wss:" ||
-    url.hostname !== "api.vaanivoice.ai" ||
-    !url.pathname.startsWith("/api/live-transcripts/")
+    !["wss:", "https:"].includes(url.protocol) ||
+    !(
+      url.hostname === "vaanivoice.ai" ||
+      url.hostname.endsWith(".vaanivoice.ai")
+    ) ||
+    !url.pathname.includes("/live-transcripts/")
   )
     throw Error("Unexpected caption host");
-  return raw;
+  url.protocol = "wss:";
+  return url.toString();
 }
 export function rtcUrl(value: unknown): string {
   const raw = text(value, 500);

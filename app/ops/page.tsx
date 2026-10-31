@@ -72,7 +72,9 @@ function RakshaOpsDashboard() {
       locationAddress: v.session.location
         ? `${v.session.location.latitude.toFixed(4)}, ${v.session.location.longitude.toFixed(4)}${v.session.location.sample ? " (sample)" : ""}`
         : undefined,
-      batteryLevel: null,
+      battery: v.session.battery
+        ? `${Math.round(v.session.battery.level * 100)}%${v.session.battery.charging ? " · charging" : ""}`
+        : "Battery unknown",
       callId: undefined as string | undefined,
       incident: v.incident,
     }))
@@ -296,7 +298,7 @@ function RakshaOpsDashboard() {
                     <div className="flex items-center justify-between text-[10px] text-ink-3 pt-1 border-t border-rule">
                       <span className="flex items-center gap-1">
                         <BatteryCharging className="w-3 h-3 text-accent" />
-                        Battery unknown
+                        {sess.battery}
                       </span>
                       <span>📞 {sess.medium}</span>
                       <span className="font-mono">
@@ -564,7 +566,9 @@ function RakshaOpsDashboard() {
 
             <div className="flex items-center justify-between text-xs">
               <span className="text-ink-3">Device Battery</span>
-              <span className="font-medium text-accent font-mono">Unknown</span>
+              <span className="font-medium text-accent font-mono">
+                {selectedSession?.battery ?? "—"}
+              </span>
             </div>
 
             <div className="flex items-center justify-between text-xs">

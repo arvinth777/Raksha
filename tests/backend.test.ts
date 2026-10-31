@@ -617,3 +617,13 @@ it("spells phone digits as words for the voice briefing", async () => {
   );
   expect(spellPhone("unavailable")).toBe("unavailable");
 });
+it("accepts Vaani caption links in https form and converts them to wss", () => {
+  expect(
+    signedCaptionUrl(
+      "https://api.vaanivoice.ai/api/live-transcripts/ws/outbound-1?token=t",
+    ),
+  ).toBe("wss://api.vaanivoice.ai/api/live-transcripts/ws/outbound-1?token=t");
+  expect(() =>
+    signedCaptionUrl("https://evil.example/api/live-transcripts/x"),
+  ).toThrow();
+});

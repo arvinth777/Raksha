@@ -322,6 +322,8 @@ function PoliceDesk() {
                     <p className="text-xs text-ink-3">
                       ±{Math.round(loc.accuracyM)} m ·{" "}
                       {ago(loc.capturedAt, now)}
+                      {alert.session.battery &&
+                        ` · battery ${Math.round(alert.session.battery.level * 100)}%`}
                       {loc.sample && (
                         <span className="ml-1 text-warn">
                           · sample location
