@@ -40,6 +40,15 @@ export const sessionView = v.union(
     events: v.array(event),
   }),
 );
+// Dashboard list rows: everything but the heavy transcript and event history.
+export const sessionSummary = v.object({
+  session,
+  checkIn: v.union(v.null(), checkIn),
+  incident: v.union(v.null(), incident),
+  delivery: v.array(
+    v.object({ _id: v.id("jobs"), _creationTime: v.number(), ...safeJob }),
+  ),
+});
 export const claimedJob = v.union(
   v.null(),
   v.object({

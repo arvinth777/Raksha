@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { CheckCircle2, Siren } from "lucide-react";
 
 // Safety check-in: full-screen only in typed demo; during a call a card above the
@@ -16,11 +17,15 @@ export function CheckInCard({
   autoEscalate: boolean;
   onRespond: (response: "safe" | "help") => void;
 }) {
+  const safe = useRef<HTMLButtonElement>(null);
+  // Move focus to the safe answer so keyboard and screen-reader users land on it.
+  useEffect(() => safe.current?.focus(), []);
   return (
     <div
-      role="dialog"
+      role="alertdialog"
       aria-modal={demo}
       aria-labelledby="checkInTitle"
+      aria-describedby="checkInBody"
       className={
         demo
           ? "fixed inset-0 z-50 bg-ink/50 flex items-end sm:items-center justify-center p-4"
@@ -49,7 +54,7 @@ export function CheckInCard({
           <h2 id="checkInTitle" className="font-display lc text-3xl">
             Are you feeling safe?
           </h2>
-          <p className="text-sm text-ink-2">
+          <p id="checkInBody" className="text-sm text-ink-2">
             {reason === "silence"
               ? "We haven't heard from you for a while."
               : "Something in the conversation sounded concerning."}{" "}
@@ -60,6 +65,7 @@ export function CheckInCard({
         </div>
         <div className="grid grid-cols-2 border-t border-rule divide-x divide-rule">
           <button
+            ref={safe}
             onClick={() => onRespond("safe")}
             className="min-h-[56px] flex items-center justify-center gap-2 font-display lc text-xl text-safe hover:bg-paper-2 rounded-bl-card"
           >

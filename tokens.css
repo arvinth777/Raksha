@@ -20,9 +20,9 @@
   --c-danger: 52% 0.2 25;
   --c-danger-soft: 94% 0.03 25;
   --c-danger-ink: 98.5% 0.006 25;
-  --c-warn: 66% 0.15 70;
+  --c-warn: 52% 0.14 70;
   --c-warn-soft: 95% 0.045 80;
-  --c-safe: 56% 0.13 160;
+  --c-safe: 48% 0.12 160;
   --c-focus: 55% 0.2 268;
 
   --color-paper: oklch(var(--c-paper));
@@ -73,7 +73,7 @@
   --c-accent-ink: 16% 0.03 50;
   --c-danger: 65% 0.2 22;
   --c-danger-soft: 26% 0.07 22;
-  --c-danger-ink: 98% 0.008 22;
+  --c-danger-ink: 16% 0.03 22;
   --c-warn: 86% 0.15 98;
   --c-warn-soft: 27% 0.05 98;
   --c-safe: 76% 0.13 160;

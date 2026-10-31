@@ -78,7 +78,7 @@ export function InCallView({
           <button
             onClick={() => setShowTranscript((v) => !v)}
             aria-expanded={showTranscript}
-            className="label text-[10px] text-accent hover:underline"
+            className="label text-[11px] text-accent hover:underline min-h-[44px] px-2 -mr-2 -my-3"
           >
             {showTranscript ? "Hide" : "Show"}
           </button>
@@ -116,7 +116,7 @@ export function InCallView({
         </Panel>
       )}
       {session.mode === "live" && !callFailed && (
-        <p className="text-sm text-ink-2 border-l-2 border-accent pl-3">
+        <p className="text-sm text-ink-2 border-l border-accent pl-3">
           Raksha is calling your phone. Answer it in your normal dialer.
         </p>
       )}

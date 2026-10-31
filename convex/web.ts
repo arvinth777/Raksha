@@ -5,8 +5,8 @@ import type { QueryCtx, MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import * as model from "./model";
-import { snapshot } from "./sessions";
-import { sessionView } from "./views";
+import { snapshot, summary } from "./sessions";
+import { sessionSummary, sessionView } from "./views";
 import { sessionMode } from "./schema";
 import { browserSegments, say } from "./ingest";
 async function viewer(ctx: QueryCtx | MutationCtx) {
@@ -38,6 +38,12 @@ export const me = query({
     name: v.string(),
     role: v.union(v.literal("tester"), v.literal("operator")),
     liveEnabled: v.boolean(),
+    policeRoute: v.union(
+      v.literal("phone"),
+      v.literal("browser desk"),
+      v.literal("demo only"),
+      v.literal("not set"),
+    ),
   }),
   handler: async (ctx) => {
     const u = await viewer(ctx);
@@ -46,6 +52,7 @@ export const me = query({
       role: u.role!,
       liveEnabled:
         u.role === "operator" && process.env.LIVE_CALLS_ENABLED === "true",
+      policeRoute: policeRoute(),
     };
   },
 });
@@ -365,14 +372,17 @@ export const device = mutation({
 });
 export const list = query({
   args: {},
-  returns: v.array(sessionView),
+  // Summaries only: every new caption would otherwise re-send all transcripts to every dashboard.
+  returns: v.array(sessionSummary),
   handler: async (ctx) => {
     await operator(ctx);
     // Anyone with the demo link is an operator: keep older conversations out of view.
     const rows = (await ctx.db.query("sessions").order("desc").take(30)).filter(
       (s) => Date.now() - s.createdAt < 2 * 3600000,
     );
-    return Promise.all(rows.map((s) => snapshot(ctx, s._id)));
+    return (await Promise.all(rows.map((s) => summary(ctx, s._id)))).filter(
+      (x): x is NonNullable<typeof x> => x !== null,
+    );
   },
 });
 export const requestCheckIn = mutation({
@@ -421,3 +431,12 @@ export const clock = action({
     return Date.now();
   },
 });
+
+// Where a police alert would go right now; mirrors the routing in dispatch.ts.
+function policeRoute() {
+  if (process.env.LIVE_CALLS_ENABLED !== "true") return "demo only" as const;
+  if (!process.env.VAANI_RESPONDER_AGENT_ID) return "not set" as const;
+  const ist = (Math.floor(Date.now() / 60000) + 330) % 1440;
+  const phone = process.env.TEST_RESPONDER_PHONE;
+  return phone && ist >= 480 && ist < 1200 ? ("phone" as const) : ("browser desk" as const);
+}

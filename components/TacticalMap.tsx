@@ -37,7 +37,11 @@ export default function TacticalMap({
     if (!instance) return;
     marker.current?.remove();
     radius.current?.remove();
-    const color = isEmergency ? "#dc2626" : "#059669";
+    // Leaflet needs a literal colour: resolve the theme token at the map's own element.
+    const token = getComputedStyle(element.current!).getPropertyValue(
+      isEmergency ? "--c-danger" : "--c-safe",
+    );
+    const color = `oklch(${token.trim()})`;
     const label = document.createElement("span");
     label.textContent = citizenName + " · last-known location";
     marker.current = L.circleMarker([latitude, longitude], {

@@ -91,7 +91,12 @@ function RakshaOpsDashboard() {
     );
   const selectedSession =
     sessions?.find((s) => s._id === selectedSessionId) || sessions?.[0];
-  const transcripts = selectedSession?.view.transcripts
+  // Only the selected session streams its full transcript and event log.
+  const detail = useQuery(
+    api.web.get,
+    selectedSession ? { sessionId: selectedSession._id } : "skip",
+  );
+  const transcripts = detail?.transcripts
     .slice()
     .reverse()
     .map((t) => ({
@@ -103,7 +108,7 @@ function RakshaOpsDashboard() {
             ? "assistant"
             : "unknown",
     }));
-  const events = selectedSession?.view.events;
+  const events = detail?.events;
   const requestResponder = useMutation(api.web.requestResponder);
   const demoSay = useMutation(api.web.demoSay);
   const [speech, setSpeech] = useState("");
@@ -224,7 +229,7 @@ function RakshaOpsDashboard() {
           </div>
 
           {/* Session Cards List */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2">
+          <div className="flex-1 overflow-y-auto p-2 space-y-2">
             {!sessions || sessions.length === 0 ? (
               <div className="text-center py-10 px-4 text-ink-3 text-xs">
                 <Shield className="w-8 h-8 text-ink-3 mx-auto mb-2" />
@@ -245,7 +250,7 @@ function RakshaOpsDashboard() {
                     key={sess._id}
                     onClick={() => setSelectedSessionId(sess._id)}
                     aria-current={isSelected}
-                    className={`w-full text-left px-3 py-3 border-l-2 border-b border-b-rule transition-colors ${
+                    className={`w-full text-left px-3 py-3 border-l border-b border-b-rule transition-colors ${
                       isSelected
                         ? "border-l-accent bg-paper-3"
                         : "border-l-transparent hover:bg-paper-3/50"
@@ -316,9 +321,6 @@ function RakshaOpsDashboard() {
                 <span className="font-bold text-ink uppercase tracking-wider text-[11px]">
                   Live conversation transcript
                 </span>
-                <span className="px-1.5 py-0.2 rounded bg-accent-soft text-accent text-[10px] font-mono">
-                  VAANI VOICE AI
-                </span>
               </div>
 
               <div className="text-[11px] text-ink-3">
@@ -340,7 +342,7 @@ function RakshaOpsDashboard() {
                   el.scrollHeight - el.scrollTop - el.clientHeight < 40;
                 setShowJump(!pinned.current);
               }}
-              className="flex-1 p-3 overflow-y-auto custom-scrollbar space-y-2 text-xs"
+              className="flex-1 p-3 overflow-y-auto space-y-2 text-xs"
             >
               {!transcripts || transcripts.length === 0 ? (
                 <div className="text-center py-6 text-ink-3 text-xs">
@@ -422,7 +424,7 @@ function RakshaOpsDashboard() {
             )}
           </div>
 
-          <section className="shrink-0 max-h-40 overflow-y-auto custom-scrollbar p-3 text-xs border border-rule rounded-xl bg-paper-2">
+          <section className="shrink-0 max-h-40 overflow-y-auto p-3 text-xs border border-rule rounded-xl bg-paper-2">
             <h2 className="label text-[11px] text-ink-3 mb-2">
               Event timeline
             </h2>

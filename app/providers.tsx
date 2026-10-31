@@ -28,7 +28,7 @@ function Gate({ children }: { children: ReactNode }) {
             </span>
           </span>
           <button
-            className="shrink-0 text-paper/80 hover:text-paper underline-offset-2 hover:underline"
+            className="shrink-0 min-h-[44px] px-2 -my-2 text-paper/80 hover:text-paper underline-offset-2 hover:underline"
             onClick={() => void signOut()}
           >
             Sign out

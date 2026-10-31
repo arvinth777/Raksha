@@ -275,7 +275,7 @@ export default function RakshaUserApp() {
             </span>
             <a
               href="/ops"
-              className="label text-[10px] text-ink-3 hover:text-ink"
+              className="label text-[11px] text-ink-3 hover:text-ink inline-flex items-center min-h-[44px] px-2 -mr-2"
             >
               Ops
             </a>
@@ -286,7 +286,7 @@ export default function RakshaUserApp() {
           {error && (
             <p
               role="alert"
-              className="flex gap-2 items-start border-l-2 border-danger pl-3 py-1 text-sm text-danger"
+              className="flex gap-2 items-start border-l border-danger pl-3 py-1 text-sm text-danger"
             >
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               {error}
@@ -382,7 +382,13 @@ export default function RakshaUserApp() {
                         ? undefined
                         : "Tap to share",
                   },
-                  { label: "Police", value: "stand-in ready", ok: true },
+                  {
+                    label: "Police",
+                    value: me?.policeRoute ?? "checking…",
+                    ok:
+                      me?.policeRoute === "phone" ||
+                      me?.policeRoute === "browser desk",
+                  },
                   {
                     label: "Check-ins",
                     value: autoEscalate ? "alert if missed" : "listen only",

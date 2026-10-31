@@ -51,29 +51,20 @@
 /* Thin, unobtrusive scrollbars on every scroll area */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(112 121 116 / 0.45) transparent;
+  scrollbar-color: oklch(var(--c-ink-3) / 0.45) transparent;
 }
 html,
 body {
   overflow-x: clip;
 }
+::selection {
+  background: oklch(var(--c-accent) / 0.25);
+}
+input,
+textarea {
+  caret-color: oklch(var(--c-accent));
+}
 
-
-/* Custom Tactical Scrollbars */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
 
 /* OpenStreetMap Tactical Dark Theme Filter (No API Key Required) */
 .leaflet-tile-pane {

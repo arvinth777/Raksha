@@ -68,7 +68,11 @@ function PoliceDesk() {
 
   const responder = alert?.delivery.find((j) => j.purpose === "responder");
   const loc = alert?.session.location;
-  const lines = (alert?.transcripts ?? []).slice().reverse();
+  const detail = useQuery(
+    api.web.get,
+    alert ? { sessionId: alert.session._id } : "skip",
+  );
+  const lines = (detail?.transcripts ?? []).slice().reverse();
   const live =
     !!alert && !alert.session.ended && alert.session.callState === "connected";
 
@@ -107,7 +111,7 @@ function PoliceDesk() {
       {error && (
         <p
           role="alert"
-          className="shrink-0 border-l-2 border-danger mx-5 mt-3 pl-3 text-sm text-danger"
+          className="shrink-0 border-l border-danger mx-5 mt-3 pl-3 text-sm text-danger"
         >
           {error}
         </p>
@@ -138,7 +142,7 @@ function PoliceDesk() {
                     <button
                       onClick={() => setSelectedId(a.session._id)}
                       aria-current={selected}
-                      className={`w-full text-left px-4 py-3 border-l-2 border-b border-b-rule transition-colors ${
+                      className={`w-full text-left px-4 py-3 border-l border-b border-b-rule transition-colors ${
                         selected
                           ? "border-l-accent bg-paper-2"
                           : "border-l-transparent hover:bg-paper-2/60"

@@ -39,7 +39,7 @@ export function OpsSidePanel({
   onResolve: () => void;
 }) {
   return (
-    <section className="w-full xl:w-80 bg-paper-2 border-l border-rule flex flex-col shrink-0 xl:overflow-y-auto custom-scrollbar">
+    <section className="w-full xl:w-80 bg-paper-2 border-l border-rule flex flex-col shrink-0 xl:overflow-y-auto">
       <div className="p-4 border-b border-rule">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-display text-2xl text-ink truncate">

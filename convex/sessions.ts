@@ -6,6 +6,23 @@ import { internal } from "./_generated/api";
 import * as model from "./model";
 import { sessionView } from "./views";
 export async function snapshot(ctx: QueryCtx, sessionId: Id<"sessions">) {
+  const base = await summary(ctx, sessionId);
+  if (!base) return null;
+  return {
+    ...base,
+    transcripts: await ctx.db
+      .query("transcripts")
+      .withIndex("by_sessionId_and_index", (q) => q.eq("sessionId", sessionId))
+      .order("desc")
+      .take(100),
+    events: await ctx.db
+      .query("events")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", sessionId))
+      .order("desc")
+      .take(50),
+  };
+}
+export async function summary(ctx: QueryCtx, sessionId: Id<"sessions">) {
   const s = await ctx.db.get(sessionId);
   if (!s) return null;
   const jobs = await ctx.db
@@ -27,16 +44,6 @@ export async function snapshot(ctx: QueryCtx, sessionId: Id<"sessions">) {
     delivery: jobs.map(
       ({ captionUrl, callId, toolToken, webToken, webUrl, ...safe }) => safe,
     ),
-    transcripts: await ctx.db
-      .query("transcripts")
-      .withIndex("by_sessionId_and_index", (q) => q.eq("sessionId", sessionId))
-      .order("desc")
-      .take(100),
-    events: await ctx.db
-      .query("events")
-      .withIndex("by_sessionId", (q) => q.eq("sessionId", sessionId))
-      .order("desc")
-      .take(50),
   };
 }
 export const expire = internalMutation({

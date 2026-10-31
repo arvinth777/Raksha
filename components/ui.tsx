@@ -49,7 +49,7 @@ export function Chip({
 }) {
   return (
     <span
-      className={`label inline-flex items-center gap-1.5 h-6 px-2 rounded-full border border-rule text-[10px] ${toneText[tone]}`}
+      className={`label inline-flex items-center gap-1.5 h-6 px-2 rounded-full border border-rule text-[11px] ${toneText[tone]}`}
     >
       <span
         aria-hidden
