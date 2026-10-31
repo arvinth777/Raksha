@@ -80,6 +80,65 @@ export const note = internalMutation({
     return null;
   },
 });
+export const pollTarget = internalQuery({
+  args: { jobId: v.id("jobs") },
+  returns: v.union(v.null(), v.string()),
+  handler: async (ctx, a) => {
+    const j = await ctx.db.get(a.jobId);
+    if (!j?.callId || !["accepted", "answered"].includes(j.state)) return null;
+    return j.callId;
+  },
+});
+export const applyStatus = internalMutation({
+  args: {
+    jobId: v.id("jobs"),
+    status: v.union(
+      v.literal("connected"),
+      v.literal("ended"),
+      v.literal("no_answer"),
+      v.literal("failed"),
+    ),
+  },
+  returns: v.null(),
+  handler: async (ctx, { jobId, status }) => {
+    const j = await ctx.db.get(jobId);
+    if (!j) return null;
+    const s = await ctx.db.get(j.sessionId);
+    if (!s) return null;
+    const terminal = ["ended", "failed", "no_answer", "rejected"];
+    if (j.purpose === "user" && !terminal.includes(s.callState)) {
+      if (status === "connected" && s.callState !== "connected")
+        await ctx.db.patch(s._id, {
+          callState: "connected",
+          lastUserAt: Date.now(),
+        });
+      else if (status !== "connected")
+        await ctx.db.patch(s._id, {
+          callState: status,
+          monitoringState: "stopped",
+        });
+    }
+    const next =
+      status === "connected"
+        ? "answered"
+        : status === "no_answer" || status === "failed"
+          ? "failed"
+          : null;
+    if (next && j.state !== next && j.state !== "acknowledged") {
+      await ctx.db.patch(j._id, {
+        state: next,
+        ...(next === "failed" ? { error: status.toUpperCase() } : {}),
+      });
+      await event(ctx, s._id, `provider.${status}`, j.purpose);
+    } else if (
+      status === "ended" &&
+      j.purpose === "user" &&
+      !terminal.includes(s.callState)
+    )
+      await event(ctx, s._id, "provider.ended", j.purpose);
+    return null;
+  },
+});
 export const captionTarget = internalQuery({
   args: { jobId: v.id("jobs") },
   returns: v.union(v.null(), v.object({ url: v.string() })),

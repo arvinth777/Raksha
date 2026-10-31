@@ -149,6 +149,11 @@ export const run = internalAction({
           : {}),
         toolToken,
       });
+      if (!web)
+        await ctx.scheduler.runAfter(8000, internal.callstatus.poll, {
+          jobId,
+          n: 0,
+        });
       // Phone calls: read Vaani's caption stream server-side (in-app calls relay from the browser).
       if (captionUrl && !web && work.purpose === "user")
         await ctx.scheduler.runAfter(0, internal.captions.relay, { jobId });

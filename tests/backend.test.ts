@@ -627,3 +627,25 @@ it("accepts Vaani caption links in https form and converts them to wss", () => {
     signedCaptionUrl("https://evil.example/api/live-transcripts/x"),
   ).toThrow();
 });
+it("classifies Vaani call-history statuses", async () => {
+  const { classify } = await import("../convex/callstatus");
+  expect(
+    classify({
+      call_status: "User Did not Pick",
+      sub_status: "User Did Not Pick",
+    }),
+  ).toBe("no_answer");
+  expect(classify({ call_status: "Completed", sub_status: "Call Ended" })).toBe(
+    "ended",
+  );
+  expect(
+    classify({
+      call_status: "In Progress",
+      sub_status: "Started",
+      user_picked_up_at: "2026-10-31T12:00:00",
+    }),
+  ).toBe("connected");
+  expect(
+    classify({ call_status: "In Progress", sub_status: "Started" }),
+  ).toBeNull();
+});
