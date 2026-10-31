@@ -1,10 +1,19 @@
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 
+// Self-hosted at build time; tokens.css maps these to --font-display / --font-body / --font-mono.
+const display = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+});
+const body = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+
 export const metadata: Metadata = {
-  title: "Raksha — Personal Safety Harbor",
+  title: "Raksha",
   description: "Call-first personal safety prototype",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -17,7 +26,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#003629",
+  themeColor: "oklch(38% 0.07 165)",
 };
 
 export default function RootLayout({
@@ -26,11 +35,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
+    >
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
-      <body className="antialiased bg-surface text-on-surface">
+      <body className="antialiased bg-paper text-ink font-sans">
         <Providers>{children}</Providers>
         <script
           dangerouslySetInnerHTML={{

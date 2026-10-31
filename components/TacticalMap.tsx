@@ -57,7 +57,7 @@ export default function TacticalMap({
   return (
     <div className="relative h-full min-h-[140px] isolate">
       <div ref={element} className="h-full min-h-[140px]" />
-      <span className="absolute top-2 left-12 z-[400] bg-slate-900 text-white p-2 text-xs rounded">
+      <span className="absolute top-2 left-12 z-[400] bg-paper-2 text-ink border border-rule px-2 py-1 text-xs rounded-md">
         Last-known location · ±{Math.round(accuracyM)}m
       </span>
     </div>

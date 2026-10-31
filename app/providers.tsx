@@ -9,26 +9,49 @@ function Gate({ children }: { children: ReactNode }) {
   const { signIn, signOut } = useAuthActions();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  if (isLoading) return <p className="p-8">Connecting to Raksha…</p>;
+  if (isLoading)
+    return (
+      <p className="min-h-dvh grid place-items-center bg-paper text-ink-3 text-sm">
+        Connecting to Raksha…
+      </p>
+    );
   if (isAuthenticated)
     return (
       <div className="min-h-dvh flex flex-col">
-        <div className="h-8 shrink-0 bg-amber-100 text-amber-950 text-xs px-4 flex items-center justify-between gap-3">
-          <span>Demo · police alerts go to a stand-in</span>
-          <button onClick={() => void signOut()}>Sign out</button>
+        <div className="h-8 shrink-0 bg-ink text-paper text-xs px-4 flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2 min-w-0">
+            <span className="font-mono text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-paper/15">
+              DEMO
+            </span>
+            <span className="truncate text-paper/80">
+              Police alerts reach a consenting stand-in
+            </span>
+          </span>
+          <button
+            className="shrink-0 text-paper/80 hover:text-paper underline-offset-2 hover:underline"
+            onClick={() => void signOut()}
+          >
+            Sign out
+          </button>
         </div>
         <div className="flex-1 flex flex-col">{children}</div>
       </div>
     );
   return (
-    <main className="min-h-dvh flex items-center justify-center bg-[#fbf9f2] p-6">
-      <div className="max-w-sm w-full space-y-5 text-center">
-        <h1 className="text-3xl font-bold text-[#003629]">Raksha</h1>
-        <p className="text-sm text-[#404945]">
-          Supervised demo. Police alerts go to a consenting stand-in.
-        </p>
+    <main className="min-h-dvh flex flex-col justify-between bg-paper text-ink px-6 py-10">
+      <p className="font-mono text-xs text-ink-3">Supervised demo</p>
+      <div className="max-w-sm w-full mx-auto space-y-6">
+        <div className="space-y-3">
+          <h1 className="font-display text-6xl font-bold tracking-tight text-accent">
+            Raksha
+          </h1>
+          <p className="text-lg text-ink-2 leading-snug">
+            A voice that stays on the line when you feel unsafe, and alerts help
+            when you ask.
+          </p>
+        </div>
         <button
-          className="min-h-[48px] bg-[#1b4d3e] hover:bg-[#003629] text-white font-semibold rounded-lg p-3 w-full disabled:opacity-70"
+          className="w-full min-h-[52px] rounded-full bg-accent text-accent-ink font-semibold transition-colors duration-150 ease-out hover:bg-accent/90 active:translate-y-px disabled:opacity-60"
           disabled={busy}
           onClick={async () => {
             setBusy(true);
@@ -46,10 +69,14 @@ function Gate({ children }: { children: ReactNode }) {
         >
           {busy ? "Signing in…" : "Sign in · no password required"}
         </button>
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="text-sm text-danger min-h-5">
           {error}
         </p>
       </div>
+      <p className="max-w-sm mx-auto text-xs text-ink-3 text-center">
+        Police alerts in this demo reach a consenting stand-in, never a real
+        emergency service.
+      </p>
     </main>
   );
 }

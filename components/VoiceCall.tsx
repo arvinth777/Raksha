@@ -147,7 +147,7 @@ export function VoiceCall({
   return (
     <div className="space-y-2">
       <div ref={speakers} hidden />
-      <p aria-live="polite" className="text-xs font-semibold">
+      <p aria-live="polite" className="text-sm font-medium">
         {status}
       </p>
       {purpose === "user" && state === "connected" && (
@@ -156,7 +156,7 @@ export function VoiceCall({
         </p>
       )}
       {note && (
-        <p role="alert" className="text-xs text-amber-200">
+        <p role="alert" className="text-xs text-warn">
           {note}
         </p>
       )}
@@ -168,7 +168,7 @@ export function VoiceCall({
                 setState("idle");
                 void join();
               }}
-              className={`${btn} bg-emerald-500 hover:bg-emerald-400 text-white`}
+              className={`${btn} bg-accent hover:bg-accent/90 text-accent-ink`}
             >
               <PhoneCall className="w-4 h-4" />
               {state === "idle" ? joinLabel : "Rejoin call"}
@@ -177,7 +177,7 @@ export function VoiceCall({
         {needsTap && (
           <button
             onClick={() => void room.current?.startAudio()}
-            className={`${btn} bg-amber-500 text-black`}
+            className={`${btn} bg-warn text-ink`}
           >
             <Volume2 className="w-4 h-4" />
             Tap to hear Raksha
@@ -188,7 +188,7 @@ export function VoiceCall({
             <button
               onClick={() => void toggleMute()}
               aria-pressed={muted}
-              className={`${btn} bg-white/15 hover:bg-white/25 text-white`}
+              className={`${btn} bg-paper-3 hover:bg-rule text-ink`}
             >
               {muted ? (
                 <MicOff className="w-4 h-4" />
@@ -199,7 +199,7 @@ export function VoiceCall({
             </button>
             <button
               onClick={() => void room.current?.disconnect()}
-              className={`${btn} bg-red-600 hover:bg-red-500 text-white`}
+              className={`${btn} bg-danger hover:bg-danger/90 text-danger-ink`}
             >
               <PhoneOff className="w-4 h-4" />
               Hang up

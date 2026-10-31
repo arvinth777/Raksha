@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-31",
+  "fonts": "Plus Jakarta Sans (display) + Inter (body) via Google Fonts @import (app/globals.css L1); tailwind fontFamily (tailwind.config.cjs L42)",
+  "palette": "hex values in tailwind.config.cjs theme.extend.colors (L11+) plus many inline hex classes in app/*.tsx; no OKLCH, no :root tokens",
+  "motion": "motion-cut (no framer-motion / motion / gsap / lenis in package.json)",
+  "spacing": "Tailwind default 4-pt scale, no custom spacing tokens",
+  "framework": "Next.js 16 app router + Tailwind 3 + Convex",
+  "design_md": false
+}

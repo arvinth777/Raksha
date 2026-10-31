@@ -81,16 +81,19 @@ function PoliceDesk() {
   }, [lines.length, lines.at(-1)?.text, alert?.session._id]);
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0b1220] text-slate-100 font-sans md:flex-none md:h-[calc(100dvh-2rem)] md:overflow-hidden">
-      <header className="shrink-0 px-4 py-2.5 bg-[#111a2e] border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+    <div
+      data-theme="night"
+      className="flex-1 flex flex-col bg-paper text-ink font-sans md:flex-none md:h-[calc(100dvh-2rem)] md:overflow-hidden"
+    >
+      <header className="shrink-0 px-4 py-2.5 bg-paper-2 border-b border-rule flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Siren className="w-5 h-5 text-red-400" />
+          <Siren className="w-5 h-5 text-danger" />
           <h1 className="font-bold text-lg">Raksha · Police desk</h1>
-          <span className="text-[11px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-600/40 font-mono">
+          <span className="text-[11px] px-2 py-0.5 rounded bg-warn-soft text-warn border border-warn/40 font-mono">
             DEMO STAND-IN
           </span>
         </div>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-ink-3">
           No real emergency service is contacted from this prototype.
         </p>
       </header>
@@ -98,7 +101,7 @@ function PoliceDesk() {
       {error && (
         <p
           role="alert"
-          className="shrink-0 bg-red-950 text-white px-4 py-2 text-sm"
+          className="shrink-0 bg-danger-soft text-danger px-4 py-2 text-sm"
         >
           {error}
         </p>
@@ -110,13 +113,13 @@ function PoliceDesk() {
           aria-label="Alerts"
           className="flex flex-col gap-2 min-h-0 max-h-56 overflow-y-auto md:max-h-none"
         >
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-ink-3">
             Active alerts ({alerts.length})
           </h2>
           {views === undefined ? (
-            <p className="text-sm text-slate-400">Loading…</p>
+            <p className="text-sm text-ink-3">Loading…</p>
           ) : alerts.length === 0 ? (
-            <p className="text-sm text-slate-400 border border-slate-800 rounded-xl p-4">
+            <p className="text-sm text-ink-3 border border-rule rounded-xl p-4">
               No active alerts. This page updates by itself when a Raksha user
               sends SOS.
             </p>
@@ -128,8 +131,8 @@ function PoliceDesk() {
                 aria-current={a === alert}
                 className={`w-full text-left min-h-[44px] p-3 rounded-xl border text-sm ${
                   a === alert
-                    ? "border-red-500 bg-red-950/40"
-                    : "border-slate-800 bg-[#111a2e] hover:bg-slate-800/60"
+                    ? "border-danger bg-danger-soft"
+                    : "border-rule bg-paper-2 hover:bg-paper-3/60"
                 }`}
               >
                 <div className="flex justify-between gap-2">
@@ -139,14 +142,14 @@ function PoliceDesk() {
                   <span
                     className={`text-[10px] font-bold uppercase shrink-0 ${
                       a.incident!.state === "open"
-                        ? "text-red-400"
-                        : "text-emerald-400"
+                        ? "text-danger"
+                        : "text-accent"
                     }`}
                   >
                     {a.incident!.state === "open" ? "New" : "Ack'd"}
                   </span>
                 </div>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-ink-3">
                   {ago(a.incident!.createdAt, now)}
                 </span>
               </button>
@@ -160,11 +163,11 @@ function PoliceDesk() {
             <section
               className={`shrink-0 rounded-2xl border px-4 py-3 ${
                 alert.incident!.state === "open"
-                  ? "border-red-500 bg-red-950/30"
-                  : "border-slate-700 bg-[#111a2e]"
+                  ? "border-danger bg-danger-soft"
+                  : "border-rule bg-paper-2"
               }`}
             >
-              <p className="text-[11px] font-bold uppercase tracking-wider text-red-300 flex items-center gap-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-danger flex items-center gap-1.5">
                 <Siren className="w-3.5 h-3.5" />
                 {alert.incident!.state === "open"
                   ? "Incoming SOS alert"
@@ -173,13 +176,10 @@ function PoliceDesk() {
               <h2 className="text-xl font-bold break-words">
                 {alert.incident!.reason}
               </h2>
-              <p className="text-sm text-slate-300 flex flex-wrap items-center gap-x-3 gap-y-1">
+              <p className="text-sm text-ink-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                 {who && (
                   <span>
-                    <span className="font-semibold text-slate-100">
-                      {who.name}
-                    </span>{" "}
-                    ·{" "}
+                    <span className="font-semibold text-ink">{who.name}</span> ·{" "}
                     <a
                       className="underline font-mono"
                       href={`tel:${who.phone.replaceAll(" ", "")}`}
@@ -198,20 +198,20 @@ function PoliceDesk() {
 
             <section
               aria-label="Live call transcript"
-              className="relative flex-1 min-h-0 flex flex-col rounded-2xl border border-slate-800 bg-[#111a2e] overflow-hidden"
+              className="relative flex-1 min-h-0 flex flex-col rounded-2xl border border-rule bg-paper-2 overflow-hidden"
             >
-              <div className="shrink-0 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <div className="shrink-0 px-4 py-2.5 border-b border-rule flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-1.5">
                   <MessageSquareQuote className="w-4 h-4" /> Live call
                   transcript
                 </h3>
                 <span
                   className={`text-[11px] font-bold flex items-center gap-1.5 ${
-                    live ? "text-red-400" : "text-slate-500"
+                    live ? "text-danger" : "text-ink-3"
                   }`}
                 >
                   <span
-                    className={`w-2 h-2 rounded-full ${live ? "bg-red-500 animate-pulse" : "bg-slate-600"}`}
+                    className={`w-2 h-2 rounded-full ${live ? "bg-danger animate-pulse" : "bg-ink-3"}`}
                   />
                   {live
                     ? "LIVE"
@@ -231,7 +231,7 @@ function PoliceDesk() {
                 className="flex-1 overflow-y-auto p-4 space-y-2.5"
               >
                 {lines.length === 0 ? (
-                  <p className="text-sm text-slate-400 text-center py-8">
+                  <p className="text-sm text-ink-3 text-center py-8">
                     {alert.session.mode === "live"
                       ? "Phone-call captions are not available yet; use the details on the right."
                       : "Waiting for the caller to speak…"}
@@ -242,18 +242,16 @@ function PoliceDesk() {
                       key={t._id}
                       className={`max-w-[85%] rounded-xl border px-3 py-2 ${
                         t.speaker === "user"
-                          ? "ml-auto bg-amber-950/40 border-amber-700/40"
+                          ? "ml-auto bg-warn-soft border-warn/40"
                           : t.speaker === "agent"
-                            ? "bg-emerald-950/40 border-emerald-800/40"
-                            : "bg-slate-900 border-slate-700 italic"
+                            ? "bg-accent-soft border-accent/40"
+                            : "bg-paper-2 border-rule italic"
                       }`}
                     >
                       <div className="flex justify-between gap-3 text-[10px] font-bold uppercase mb-0.5">
                         <span
                           className={
-                            t.speaker === "user"
-                              ? "text-amber-300"
-                              : "text-emerald-300"
+                            t.speaker === "user" ? "text-warn" : "text-accent"
                           }
                         >
                           {t.speaker === "user"
@@ -262,14 +260,14 @@ function PoliceDesk() {
                               ? "Raksha"
                               : "Unknown speaker"}
                         </span>
-                        <span className="font-mono font-normal text-slate-400">
+                        <span className="font-mono font-normal text-ink-3">
                           {new Date(t.timestamp).toLocaleTimeString()}
                         </span>
                       </div>
                       <p className="text-sm leading-relaxed">
                         {t.text}
                         {!t.isFinal && (
-                          <span className="ml-1 text-slate-500">(interim)</span>
+                          <span className="ml-1 text-ink-3">(interim)</span>
                         )}
                       </p>
                     </div>
@@ -283,7 +281,7 @@ function PoliceDesk() {
                     setShowJump(false);
                     feed.current?.scrollTo({ top: feed.current.scrollHeight });
                   }}
-                  className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-red-600 text-white text-xs font-bold shadow"
+                  className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-danger text-danger-ink text-xs font-bold shadow"
                 >
                   Jump to live
                 </button>
@@ -300,7 +298,7 @@ function PoliceDesk() {
             aria-label="Alert details"
             className="flex flex-col gap-3 min-h-0 md:overflow-y-auto"
           >
-            <section className="rounded-2xl border border-slate-800 bg-[#111a2e] overflow-hidden">
+            <section className="rounded-2xl border border-rule bg-paper-2 overflow-hidden">
               {loc && (
                 <div className="h-36 lg:h-44 relative overflow-hidden">
                   <TacticalMap
@@ -313,7 +311,7 @@ function PoliceDesk() {
                 </div>
               )}
               <div className="p-4 space-y-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-3 flex items-center gap-1.5">
                   <MapPin className="w-4 h-4" /> Last known location
                 </h3>
                 {loc ? (
@@ -321,11 +319,11 @@ function PoliceDesk() {
                     <p className="font-mono text-sm">
                       {loc.latitude.toFixed(5)}, {loc.longitude.toFixed(5)}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-ink-3">
                       ±{Math.round(loc.accuracyM)} m ·{" "}
                       {ago(loc.capturedAt, now)}
                       {loc.sample && (
-                        <span className="ml-1 text-amber-300">
+                        <span className="ml-1 text-warn">
                           · sample location
                         </span>
                       )}
@@ -334,29 +332,29 @@ function PoliceDesk() {
                       href={`https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 min-h-[40px] text-sm text-sky-300 underline"
+                      className="inline-flex items-center gap-1 min-h-[40px] text-sm text-accent underline"
                     >
                       Open in Maps <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                   </>
                 ) : (
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-ink-3">
                     Unavailable: no location shared.
                   </p>
                 )}
               </div>
             </section>
 
-            <section className="rounded-2xl border border-slate-800 bg-[#111a2e] p-4 space-y-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <section className="rounded-2xl border border-rule bg-paper-2 p-4 space-y-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-ink-3">
                 Raksha voice briefing
               </h3>
               {alert.session.mode === "demo" ? (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-ink-3">
                   Typed demo session: no voice call.
                 </p>
               ) : responder?.state === "failed" ? (
-                <p className="text-sm text-red-300">
+                <p className="text-sm text-danger">
                   The voice briefing could not be placed.
                 </p>
               ) : (
@@ -367,7 +365,7 @@ function PoliceDesk() {
                   joinLabel="Answer Raksha's call"
                 />
               )}
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-ink-3">
                 Delivery: {responder?.state ?? "not started"}
               </p>
             </section>
@@ -384,7 +382,7 @@ function PoliceDesk() {
                   ),
                 );
               }}
-              className="shrink-0 w-full min-h-[52px] rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-400 font-bold flex items-center justify-center gap-2"
+              className="shrink-0 w-full min-h-[52px] rounded-2xl bg-accent text-accent-ink hover:bg-accent/90 disabled:bg-paper-3 disabled:text-ink-3 font-bold flex items-center justify-center gap-2"
             >
               <BadgeCheck className="w-5 h-5" />
               {alert.incident!.state === "open"
