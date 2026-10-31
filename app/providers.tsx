@@ -22,47 +22,34 @@ function Gate({ children }: { children: ReactNode }) {
     );
   return (
     <main className="min-h-dvh flex items-center justify-center bg-[#fbf9f2] p-6">
-      <form
-        className="max-w-sm w-full space-y-5"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setBusy(true);
-          setError("");
-          const form = new FormData(e.currentTarget);
-          try {
-            await signIn("anonymous", { code: String(form.get("code")) });
-          } catch {
-            setError(
-              "That invitation was not accepted. Check your demo access code.",
-            );
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
+      <div className="max-w-sm w-full space-y-5 text-center">
         <h1 className="text-3xl font-bold text-[#003629]">Raksha</h1>
-        <p>
-          Enter your private demo invitation. Participant and operator
-          permissions are checked by the backend.
+        <p className="text-sm text-[#404945]">
+          Supervised demo. Police alerts go to a consenting stand-in.
         </p>
-        <label className="block">
-          Demo access code
-          <input
-            className="block border border-gray-500 rounded-lg p-3 w-full mt-2"
-            name="code"
-            type="password"
-            required
-            autoComplete="off"
-          />
-        </label>
         <button
-          className="bg-[#1b4d3e] text-white rounded-lg p-3 w-full"
+          className="min-h-[48px] bg-[#1b4d3e] hover:bg-[#003629] text-white font-semibold rounded-lg p-3 w-full disabled:opacity-70"
           disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setError("");
+            try {
+              await signIn("anonymous");
+            } catch {
+              setError(
+                "Could not sign in. Check your connection and try again.",
+              );
+            } finally {
+              setBusy(false);
+            }
+          }}
         >
-          {busy ? "Connecting…" : "Enter demo"}
+          {busy ? "Signing in…" : "Sign in · no password required"}
         </button>
-        <p role="alert">{error}</p>
-      </form>
+        <p role="alert" className="text-sm text-red-800">
+          {error}
+        </p>
+      </div>
     </main>
   );
 }
