@@ -1,6 +1,6 @@
 "use client";
-import { BellRing, ChevronRight, MapPin, Mic, ShieldCheck } from "lucide-react";
-// Readiness as a native grouped list of the app's real state. A row with `onPress`
+import { BellRing, MapPin, Mic, ShieldCheck } from "lucide-react";
+// Readiness as ops-style tiles of the app's real state. A tile with `onPress`
 // is also its own control (share location, toggle check-in alerts).
 type Readout = {
   label: string;
@@ -18,39 +18,37 @@ const icons = {
 
 export function Readiness({ rows }: { rows: Readout[] }) {
   return (
-    <ul className="rounded-card bg-card overflow-hidden">
+    <ul className="grid grid-cols-2 gap-2">
       {rows.map(({ label, value, ok, onPress, hint }) => {
         const Icon = icons[label as keyof typeof icons] ?? ShieldCheck;
         const body = (
           <>
+            <span className="flex items-center gap-1.5 label text-[10px] text-ink-3">
+              <Icon
+                className={`w-3.5 h-3.5 ${ok ? "text-accent" : "text-ink-3"}`}
+              />
+              {label}
+            </span>
             <span
-              className={`w-8 h-8 rounded-[9px] grid place-items-center shrink-0 ${ok ? "bg-accent text-accent-ink" : "bg-paper-3 text-ink-2"}`}
+              className={`block text-sm mt-1.5 truncate ${ok ? "text-ink" : "text-ink-2"}`}
             >
-              <Icon className="w-[17px] h-[17px]" />
+              {value}
             </span>
-            <span className="flex-1 flex items-center gap-2 min-w-0 self-stretch border-b border-rule/70 group-last:border-0 pr-4">
-              <span className="text-[16px] text-ink">{label}</span>
-              <span className="ml-auto text-[15px] text-ink-3 truncate">
-                {value}
+            {hint && (
+              <span className="block label text-[9px] text-accent mt-1">
+                {hint}
               </span>
-              {onPress && (
-                <ChevronRight
-                  aria-hidden
-                  className="w-4 h-4 text-ink-3 shrink-0"
-                />
-              )}
-            </span>
+            )}
           </>
         );
         const cls =
-          "flex items-center gap-3 w-full min-h-[52px] pl-4 text-left";
+          "block w-full h-full text-left rounded-xl border border-rule bg-card px-3 py-2.5";
         return (
-          <li key={label} className="group">
+          <li key={label}>
             {onPress ? (
               <button
                 onClick={onPress}
-                aria-label={`${label}: ${value}. ${hint ?? ""}`}
-                className={`${cls} active:bg-paper-2 hover:bg-paper-2/60`}
+                className={`${cls} min-h-[44px] hover:border-ink-3 transition-colors duration-150`}
               >
                 {body}
               </button>

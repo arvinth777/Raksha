@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "oklch(46% 0.24 268)",
+  themeColor: "oklch(13% 0.014 265)",
 };
 
 export default function RootLayout({
@@ -32,6 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-theme="night"
       className={mono.variable}
     >
       <head>

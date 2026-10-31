@@ -73,7 +73,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-card bg-card ${className}`}>
+    <section className={`rounded-xl border border-rule bg-card ${className}`}>
       {(label || action) && (
         <header className="flex items-center justify-between gap-3 px-4 pt-3">
           {label && <h2 className="label text-[10px] text-ink-3">{label}</h2>}
@@ -86,10 +86,10 @@ export function Panel({
 }
 
 const base =
-  "inline-flex items-center justify-center gap-2 min-h-[48px] px-5 rounded-[14px] transition-[transform,background-color,border-color] duration-150 ease-out active:translate-y-px disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-xl transition-[transform,background-color,border-color] duration-150 ease-out active:translate-y-px disabled:opacity-50 disabled:pointer-events-none";
 /** Button styles: primary (accent), outline (hairline), danger (SOS), quiet (text). */
 export const btn = {
-  primary: `${base} bg-accent text-accent-ink hover:bg-accent/90 font-semibold text-[17px]`,
+  primary: `${base} bg-accent text-accent-ink hover:bg-accent/90 font-semibold text-[15px]`,
   outline: `${base} border border-rule text-ink hover:border-ink-3 text-sm font-medium`,
   danger: `${base} bg-danger text-danger-ink hover:bg-danger/90 font-semibold`,
   quiet: `${base} text-ink-2 hover:text-ink text-sm font-medium px-3`,

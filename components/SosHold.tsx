@@ -92,7 +92,7 @@ export function SosHold({
         <span className="label text-sm font-semibold">SOS</span>
       </button>
       <div className="min-w-0">
-        <p className="text-[17px] font-semibold text-ink">
+        <p className="text-[15px] font-semibold text-ink">
           {active
             ? "SOS sent"
             : holding

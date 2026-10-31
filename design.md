@@ -30,12 +30,12 @@ Semantic colour is never decoration: red = SOS/incident, warn = pending check-in
 
 ## Typography (two registers)
 - Display + body: the platform system UI face (SF Pro / Roboto / Segoe), so the citizen app reads as a native app. Titles 700, sentence case, never italic.
-- Labels: small UPPERCASE sans (`.label`) in the app; Geist Mono on the night consoles. Chips, section headers, readouts.
+- Labels: Geist Mono UPPERCASE (`.label`): chips, section headers, readouts. Every screen runs on the night theme (`data-theme="night"` on <html>), so the citizen app shares the ops console language.
 - Numbers: tabular (`.tabular`).
 - Loaded via `next/font/google` in `app/layout.tsx`.
 
 ## Signature
-No decorative diagrams. The citizen home shows real readiness as a native grouped list (voice, location, police, check-ins with icon tiles; location and check-ins are tappable). The police desk standby is a single pulsing dot.
+No decorative diagrams. The citizen home shows real readiness as four ops-style bordered tiles (voice, location, police, check-ins; location and check-ins are tappable). The police desk standby is a single pulsing dot.
 
 ## Components (`components/ui.tsx`, use these, don't restyle per page)
 - `Row`: `LABEL ····· value` readout inside a `<dl>`; tone for state (danger, warn, muted…).
@@ -47,7 +47,7 @@ No decorative diagrams. The citizen home shows real readiness as a native groupe
 - Check-in: card with mono countdown and a hairline progress line; full-screen only in typed demo, a card above the SOS bar during calls.
 
 ## Flow
-- Citizen home (grouped-list app layout on `paper-2` with white `card` surfaces): large title → card with segmented control + **Talk to Raksha** → "Safety status" list. Hold-to-send SOS circle (2 s) docked at the bottom on every screen.
+- Citizen home (ops language: night paper, bordered `card` panels, mono labels): title → mode filter strip + brass **Talk to Raksha** → "Safety status" 2×2 tiles. Hold-to-send SOS circle (2 s) docked at the bottom on every screen.
 - During a call: headline → live transcript → call controls → status → I'm safe / End.
 - Police desk: alerts | headline + live transcript | location, briefing, acknowledge.
 

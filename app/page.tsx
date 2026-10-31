@@ -262,30 +262,30 @@ export default function RakshaUserApp() {
     });
   };
   return (
-    <div className="flex-1 flex flex-col items-center bg-paper-2 text-ink">
+    <div className="flex-1 flex flex-col items-center bg-paper text-ink">
       <div className="w-full max-w-md flex-1 flex flex-col">
-        <header className="sticky top-0 z-40 h-12 px-4 flex items-center justify-between gap-3 bg-paper-2/85 backdrop-blur-xl">
-          <span className="text-[17px] font-semibold text-accent">Raksha</span>
-          <span className="flex items-center gap-1">
+        <header className="sticky top-0 z-40 h-14 px-4 flex items-center justify-between gap-3 bg-paper/90 backdrop-blur-md border-b border-rule">
+          <span className="flex items-center gap-2 min-w-0">
+            <span className="font-display text-lg text-ink">Raksha</span>
             <span role="status">
               <Chip tone={chipTone} live={status.tone !== "idle"}>
                 {status.text}
               </Chip>
             </span>
-            <a
-              href="/ops"
-              className="text-[15px] font-medium text-accent inline-flex items-center min-h-[44px] px-2 -mr-2"
-            >
-              Ops
-            </a>
           </span>
+          <a
+            href="/ops"
+            className="label text-[10px] text-ink inline-flex items-center h-9 px-3 rounded-input border border-rule hover:border-ink-3"
+          >
+            Ops
+          </a>
         </header>
 
-        <main className="flex-1 flex flex-col gap-5 px-4 pt-2 pb-6">
+        <main className="flex-1 flex flex-col gap-4 px-4 pt-5 pb-6">
           {error && (
             <p
               role="alert"
-              className="flex gap-2 items-start rounded-card bg-danger-soft px-4 py-3 text-sm text-danger"
+              className="flex gap-2 items-start rounded-xl border border-danger/50 bg-danger-soft px-3 py-2.5 text-sm text-danger"
             >
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               {error}
@@ -294,26 +294,26 @@ export default function RakshaUserApp() {
 
           {!isSessionActive ? (
             <>
-              <section className="space-y-1 px-1">
-                <p className="text-[15px] text-ink-3">Hi {firstName}</p>
-                <h1 className="text-[34px] leading-tight text-ink">
+              <section className="space-y-1.5">
+                <p className="label text-[10px] text-ink-3">Hi {firstName}</p>
+                <h1 className="text-[26px] leading-tight text-ink">
                   Feeling unsafe?
                 </h1>
-                <p className="text-[15px] text-ink-2 leading-snug">
+                <p className="text-sm text-ink-2 leading-relaxed">
                   Raksha stays on the line, listens for danger and can alert
                   your police contact.
                 </p>
               </section>
 
-              <section className="rounded-card bg-card p-3 space-y-3">
-                <fieldset className="grid grid-cols-3 gap-1 p-1 rounded-input bg-paper-2">
+              <section className="space-y-2.5">
+                <fieldset className="grid grid-cols-3 rounded-input border border-rule overflow-hidden">
                   <legend className="sr-only">
                     How should Raksha reach you?
                   </legend>
                   {modes.map((m) => (
                     <label
                       key={m.value}
-                      className="text-[13px] font-semibold min-h-[36px] rounded-[8px] grid place-items-center cursor-pointer text-ink-2 transition-colors duration-150 has-[:checked]:bg-card has-[:checked]:text-ink has-[:checked]:shadow-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed"
+                      className="label text-[10px] min-h-[40px] grid place-items-center cursor-pointer text-ink-3 transition-colors duration-150 has-[:checked]:bg-ink has-[:checked]:text-paper has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed"
                     >
                       <input
                         type="radio"
@@ -332,29 +332,25 @@ export default function RakshaUserApp() {
                   id="heroComfortBtn"
                   onClick={handleFeelingUnsafe}
                   disabled={busy}
-                  className={`${btn.primary} w-full min-h-[60px] justify-start gap-3 px-4`}
+                  className={`${btn.primary} w-full min-h-[52px] justify-between px-4`}
                 >
-                  <span className="w-9 h-9 rounded-full bg-accent-ink/15 grid place-items-center shrink-0">
-                    <PhoneCall className="w-[18px] h-[18px]" />
+                  <span className="flex items-center gap-2.5">
+                    <PhoneCall className="w-5 h-5" />
+                    {busy ? "Starting…" : "Talk to Raksha"}
                   </span>
-                  <span className="flex flex-col items-start leading-tight">
-                    <span>{busy ? "Starting…" : "Talk to Raksha"}</span>
-                    <span className="text-[13px] font-normal text-accent-ink/75">
-                      {modes.find((m) => m.value === callMode)?.hint}
-                    </span>
+                  <span className="text-xs font-normal text-accent-ink/70">
+                    {modes.find((m) => m.value === callMode)?.hint}
                   </span>
                 </button>
                 {!me?.liveEnabled && (
-                  <p className="text-xs text-ink-3 px-1">
+                  <p className="text-xs text-ink-3">
                     Real calls need an operator sign-in.
                   </p>
                 )}
               </section>
 
-              <section className="space-y-1.5">
-                <h2 className="label text-[12px] text-ink-3 px-4">
-                  Safety status
-                </h2>
+              <section className="space-y-2">
+                <h2 className="label text-[10px] text-ink-3">Safety status</h2>
                 <Readiness
                   rows={[
                     {

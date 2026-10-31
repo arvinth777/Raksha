@@ -18,17 +18,17 @@ function Gate({ children }: { children: ReactNode }) {
   if (isAuthenticated)
     return (
       <div className="min-h-dvh flex flex-col">
-        <div className="h-8 shrink-0 bg-ink text-paper text-xs px-4 flex items-center justify-between gap-3">
+        <div className="h-8 shrink-0 bg-paper-2 border-b border-rule text-ink-2 text-xs px-4 flex items-center justify-between gap-3">
           <span className="flex items-center gap-2 min-w-0">
-            <span className="font-mono text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-paper/15">
+            <span className="font-mono text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-paper-3">
               DEMO
             </span>
-            <span className="truncate text-paper/80">
+            <span className="truncate text-ink-3">
               Police alerts reach a consenting stand-in
             </span>
           </span>
           <button
-            className="shrink-0 min-h-[44px] px-2 -my-2 text-paper/80 hover:text-paper underline-offset-2 hover:underline"
+            className="shrink-0 min-h-[44px] px-2 -my-2 text-ink-3 hover:text-ink underline-offset-2 hover:underline"
             onClick={() => void signOut()}
           >
             Sign out

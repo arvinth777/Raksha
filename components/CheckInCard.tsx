@@ -51,7 +51,7 @@ export function CheckInCard({
           />
         </div>
         <div className="px-5 py-4 space-y-1.5">
-          <h2 id="checkInTitle" className="text-2xl">
+          <h2 id="checkInTitle" className="text-xl">
             Are you feeling safe?
           </h2>
           <p id="checkInBody" className="text-sm text-ink-2">
