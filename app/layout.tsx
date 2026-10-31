@@ -1,16 +1,10 @@
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import type { Metadata, Viewport } from "next";
-import { Instrument_Serif, Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 
-// Self-hosted at build time; tokens.css maps these to --font-display / --font-body / --font-mono.
-const display = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-instrument",
-});
-const body = Geist({ subsets: ["latin"], variable: "--font-geist" });
+// Display and body use the system UI face (tokens.css); only the console mono is self-hosted.
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
@@ -38,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${body.variable} ${mono.variable}`}
+      className={mono.variable}
     >
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />

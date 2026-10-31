@@ -98,7 +98,7 @@ function PoliceDesk() {
     >
       <header className="shrink-0 px-5 h-14 border-b border-rule flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <h1 className="font-display lc text-2xl text-ink truncate">
+          <h1 className="text-2xl text-ink truncate">
             Raksha <span className="text-ink-3">·</span> police desk
           </h1>
           <Chip tone="warn">Demo stand-in</Chip>
@@ -381,37 +381,9 @@ function PoliceDesk() {
             aria-label="Standing by"
             className="bg-paper md:col-span-2 flex flex-col items-center justify-center gap-6 min-h-[360px]"
           >
-            <svg
-              aria-hidden
-              viewBox="0 0 120 120"
-              className="w-40 h-40 text-accent"
-              fill="none"
-              stroke="currentColor"
-            >
-              <circle cx="60" cy="60" r="56" strokeOpacity="0.15" />
-              <circle
-                cx="60"
-                cy="60"
-                r="42"
-                strokeOpacity="0.25"
-                strokeDasharray="2 4"
-              />
-              <circle cx="60" cy="60" r="28" strokeOpacity="0.4" />
-              <path
-                d="M60 4v14M60 102v14M4 60h14M102 60h14"
-                strokeOpacity="0.3"
-              />
-              <circle
-                cx="60"
-                cy="60"
-                r="5"
-                fill="currentColor"
-                stroke="none"
-                className="animate-pulse"
-              />
-            </svg>
+            <span aria-hidden className="w-3 h-3 rounded-full bg-accent animate-pulse" />
             <div className="text-center space-y-2">
-              <h2 className="font-display lc text-4xl text-ink">standing by</h2>
+              <h2 className="text-3xl text-ink">Standing by</h2>
               <p className="label text-[10px] text-ink-3">
                 Listening for SOS · alerts appear here instantly
               </p>

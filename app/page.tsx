@@ -243,9 +243,9 @@ export default function RakshaUserApp() {
         : { text: "Connecting", tone: "live" as const };
   const lastLines = (transcripts ?? []).slice(-4);
   const modes = [
-    { value: "demo", label: "Typed", hint: "type what you'd say" },
-    { value: "web", label: "In-app", hint: "talk right here" },
-    { value: "live", label: "Phone", hint: "raksha rings your phone" },
+    { value: "demo", label: "Typed", hint: "Type what you'd say" },
+    { value: "web", label: "In-app", hint: "Talk right here" },
+    { value: "live", label: "Phone", hint: "Raksha rings your phone" },
   ] as const;
   const chipTone =
     status.tone === "danger"
@@ -262,13 +262,11 @@ export default function RakshaUserApp() {
     });
   };
   return (
-    <div className="flex-1 flex flex-col items-center bg-paper text-ink">
+    <div className="flex-1 flex flex-col items-center bg-paper-2 text-ink">
       <div className="w-full max-w-md flex-1 flex flex-col">
-        <header className="sticky top-0 z-40 h-14 px-5 flex items-center justify-between bg-paper/90 backdrop-blur-md border-b border-rule">
-          <span className="font-display lc text-2xl tracking-tight text-accent">
-            Raksha
-          </span>
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-40 h-12 px-4 flex items-center justify-between gap-3 bg-paper-2/85 backdrop-blur-xl">
+          <span className="text-[17px] font-semibold text-accent">Raksha</span>
+          <span className="flex items-center gap-1">
             <span role="status">
               <Chip tone={chipTone} live={status.tone !== "idle"}>
                 {status.text}
@@ -276,18 +274,18 @@ export default function RakshaUserApp() {
             </span>
             <a
               href="/ops"
-              className="label text-[11px] text-ink-3 hover:text-ink inline-flex items-center min-h-[44px] px-2 -mr-2"
+              className="text-[15px] font-medium text-accent inline-flex items-center min-h-[44px] px-2 -mr-2"
             >
               Ops
             </a>
-          </div>
+          </span>
         </header>
 
-        <main className="flex-1 flex flex-col gap-6 px-5 pt-7 pb-8">
+        <main className="flex-1 flex flex-col gap-5 px-4 pt-2 pb-6">
           {error && (
             <p
               role="alert"
-              className="flex gap-2 items-start border-l border-danger pl-3 py-1 text-sm text-danger"
+              className="flex gap-2 items-start rounded-card bg-danger-soft px-4 py-3 text-sm text-danger"
             >
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               {error}
@@ -296,26 +294,26 @@ export default function RakshaUserApp() {
 
           {!isSessionActive ? (
             <>
-              <section className="space-y-3">
-                <p className="label text-[10px] text-ink-3">Hi {firstName}</p>
-                <h1 className="font-display lc text-5xl leading-[0.95] text-ink">
-                  Feeling <span className="text-accent">unsafe</span>?
+              <section className="space-y-1 px-1">
+                <p className="text-[15px] text-ink-3">Hi {firstName}</p>
+                <h1 className="text-[34px] leading-tight text-ink">
+                  Feeling unsafe?
                 </h1>
-                <p className="text-ink-2 leading-relaxed">
-                  Raksha stays on the line with you, listens for danger, and can
-                  alert your police contact.
+                <p className="text-[15px] text-ink-2 leading-snug">
+                  Raksha stays on the line, listens for danger and can alert
+                  your police contact.
                 </p>
               </section>
 
-              <section className="space-y-3">
-                <fieldset className="grid grid-cols-3 border border-rule rounded-input overflow-hidden divide-x divide-rule">
+              <section className="rounded-card bg-card p-3 space-y-3">
+                <fieldset className="grid grid-cols-3 gap-1 p-1 rounded-input bg-paper-2">
                   <legend className="sr-only">
                     How should Raksha reach you?
                   </legend>
                   {modes.map((m) => (
                     <label
                       key={m.value}
-                      className="label text-[10px] min-h-[44px] grid place-items-center cursor-pointer text-ink-3 transition-colors duration-150 has-[:checked]:bg-ink has-[:checked]:text-paper has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed"
+                      className="text-[13px] font-semibold min-h-[36px] rounded-[8px] grid place-items-center cursor-pointer text-ink-2 transition-colors duration-150 has-[:checked]:bg-card has-[:checked]:text-ink has-[:checked]:shadow-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-focus has-[:disabled]:opacity-40 has-[:disabled]:cursor-not-allowed"
                     >
                       <input
                         type="radio"
@@ -334,71 +332,78 @@ export default function RakshaUserApp() {
                   id="heroComfortBtn"
                   onClick={handleFeelingUnsafe}
                   disabled={busy}
-                  className={`${btn.primary} w-full min-h-[64px] justify-between text-2xl`}
+                  className={`${btn.primary} w-full min-h-[60px] justify-start gap-3 px-4`}
                 >
-                  <span>{busy ? "starting…" : "talk to raksha"}</span>
-                  <span className="flex items-center gap-2">
-                    <span className="label text-[10px] text-accent-ink/70 font-sans">
+                  <span className="w-9 h-9 rounded-full bg-accent-ink/15 grid place-items-center shrink-0">
+                    <PhoneCall className="w-[18px] h-[18px]" />
+                  </span>
+                  <span className="flex flex-col items-start leading-tight">
+                    <span>{busy ? "Starting…" : "Talk to Raksha"}</span>
+                    <span className="text-[13px] font-normal text-accent-ink/75">
                       {modes.find((m) => m.value === callMode)?.hint}
                     </span>
-                    <PhoneCall className="w-5 h-5" />
                   </span>
                 </button>
                 {!me?.liveEnabled && (
-                  <p className="text-xs text-ink-3">
+                  <p className="text-xs text-ink-3 px-1">
                     Real calls need an operator sign-in.
                   </p>
                 )}
               </section>
 
-              <Readiness
-                rows={[
-                  {
-                    label: "Voice",
-                    value:
-                      callMode === "web"
-                        ? "in-app mic"
-                        : callMode === "live"
-                          ? "phone dialer"
-                          : "typed",
-                    ok: true,
-                  },
-                  {
-                    label: "Location",
-                    value:
-                      geoPermissionState === "granted"
-                        ? "shared"
-                        : geoPermissionState === "denied"
-                          ? "blocked"
-                          : isLocating
-                            ? "locating…"
-                            : "not shared",
-                    ok: geoPermissionState === "granted",
-                    onPress:
-                      geoPermissionState === "granted"
-                        ? undefined
-                        : requestLocation,
-                    hint:
-                      geoPermissionState === "granted"
-                        ? undefined
-                        : "Tap to share",
-                  },
-                  {
-                    label: "Police",
-                    value: me?.policeRoute ?? "checking…",
-                    ok:
-                      me?.policeRoute === "phone" ||
-                      me?.policeRoute === "browser desk",
-                  },
-                  {
-                    label: "Check-ins",
-                    value: autoEscalate ? "alert if missed" : "listen only",
-                    ok: autoEscalate,
-                    onPress: () => setAutoEscalate((v) => !v),
-                    hint: "Tap to change",
-                  },
-                ]}
-              />
+              <section className="space-y-1.5">
+                <h2 className="label text-[12px] text-ink-3 px-4">
+                  Safety status
+                </h2>
+                <Readiness
+                  rows={[
+                    {
+                      label: "Voice",
+                      value:
+                        callMode === "web"
+                          ? "in-app mic"
+                          : callMode === "live"
+                            ? "phone dialer"
+                            : "typed",
+                      ok: true,
+                    },
+                    {
+                      label: "Location",
+                      value:
+                        geoPermissionState === "granted"
+                          ? "shared"
+                          : geoPermissionState === "denied"
+                            ? "blocked"
+                            : isLocating
+                              ? "locating…"
+                              : "not shared",
+                      ok: geoPermissionState === "granted",
+                      onPress:
+                        geoPermissionState === "granted"
+                          ? undefined
+                          : requestLocation,
+                      hint:
+                        geoPermissionState === "granted"
+                          ? undefined
+                          : "Tap to share",
+                    },
+                    {
+                      label: "Police",
+                      value: me?.policeRoute ?? "checking…",
+                      ok:
+                        me?.policeRoute === "phone" ||
+                        me?.policeRoute === "browser desk",
+                    },
+                    {
+                      label: "Check-ins",
+                      value: autoEscalate ? "alert if missed" : "listen only",
+                      ok: autoEscalate,
+                      onPress: () => setAutoEscalate((v) => !v),
+                      hint: "Tap to change",
+                    },
+                  ]}
+                />
+              </section>
             </>
           ) : (
             <InCallView
@@ -425,7 +430,7 @@ export default function RakshaUserApp() {
         </main>
 
         {/* SOS: always reachable; a 2s hold replaces a confirmation dialog */}
-        <div className="sticky bottom-0 z-40 bg-paper/95 backdrop-blur-md border-t border-rule px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="sticky bottom-0 z-40 bg-card/95 backdrop-blur-xl border-t border-rule px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <SosHold onSend={handleSos} active={sosActive} disabled={busy} />
         </div>
 

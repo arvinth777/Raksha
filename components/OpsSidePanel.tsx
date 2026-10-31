@@ -125,8 +125,8 @@ export function OpsSidePanel({
         >
           <Zap className="w-5 h-5" />
           {isPatrolDispatched
-            ? `police · ${delivery?.state}`
-            : "alert police (demo)"}
+            ? `Police · ${delivery?.state}`
+            : "Alert police (demo)"}
         </button>
         <button
           disabled={busy || !selectedSession || selectedSession.ended}

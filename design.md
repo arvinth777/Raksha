@@ -29,25 +29,25 @@ Channels live in `tokens.css` as `--c-*` (L C H) so Tailwind can apply alpha.
 Semantic colour is never decoration: red = SOS/incident, warn = pending check-in.
 
 ## Typography (two registers)
-- Display: Instrument Serif 400, roman, **lowercase** titles (`.lc`): wordmark, screen titles, primary CTA. Never bold, never italic. Proper nouns and user/incident text are never lowercased.
-- Labels: Geist Mono UPPERCASE (`.label`, or any `uppercase tracking-wider`): readouts, section labels, chips.
-- Body: Geist 400/500. Numbers: tabular (`.tabular`).
+- Display + body: the platform system UI face (SF Pro / Roboto / Segoe), so the citizen app reads as a native app. Titles 700, sentence case, never italic.
+- Labels: small UPPERCASE sans (`.label`) in the app; Geist Mono on the night consoles. Chips, section headers, readouts.
+- Numbers: tabular (`.tabular`).
 - Loaded via `next/font/google` in `app/layout.tsx`.
 
 ## Signature
-One hairline "receiver" instrument per screen (never a glowing orb): the citizen home shows real readiness (voice, location, police, check-ins; location and check-ins are tappable); the police desk shows it as the standing-by state.
+No decorative diagrams. The citizen home shows real readiness as a native grouped list (voice, location, police, check-ins with icon tiles; location and check-ins are tappable). The police desk standby is a single pulsing dot.
 
 ## Components (`components/ui.tsx`, use these, don't restyle per page)
 - `Row`: `LABEL ····· value` readout inside a `<dl>`; tone for state (danger, warn, muted…).
 - `Chip`: mono UPPERCASE status pill with a dot; `live` pulses. Words carry meaning, colour reinforces.
 - `Panel`: hairline card with a mono caption and an optional action.
 - `LogLine`: transcript as a log: speaker/time column + line. No chat bubbles.
-- `btn.primary` (accent, lowercase serif), `btn.outline` (hairline), `btn.danger` (SOS), `btn.quiet` (text).
+- `btn.primary` (accent, 17px semibold, 14px radius), `btn.outline` (hairline), `btn.danger` (SOS), `btn.quiet` (text).
 - Segmented choices: hairline strip, selected cell inverted (ink on paper).
 - Check-in: card with mono countdown and a hairline progress line; full-screen only in typed demo, a card above the SOS bar during calls.
 
 ## Flow
-- Citizen home: headline → mode strip + **talk to raksha** → readiness instrument. SOS pinned at the bottom on every screen.
+- Citizen home (grouped-list app layout on `paper-2` with white `card` surfaces): large title → card with segmented control + **Talk to Raksha** → "Safety status" list. Hold-to-send SOS circle (2 s) docked at the bottom on every screen.
 - During a call: headline → live transcript → call controls → status → I'm safe / End.
 - Police desk: alerts | headline + live transcript | location, briefing, acknowledge.
 

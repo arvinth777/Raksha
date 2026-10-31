@@ -168,7 +168,7 @@ function RakshaOpsDashboard() {
       {/* 1. TOP COMMAND BAR */}
       <header className="h-14 px-5 border-b border-rule flex items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="font-display lc text-2xl text-ink">
+          <span className="font-display text-xl text-ink">
             Raksha <span className="text-ink-3">·</span> operations
           </span>
           <span className="hidden sm:inline">

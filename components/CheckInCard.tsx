@@ -33,7 +33,7 @@ export function CheckInCard({
             "fixed inset-x-0 bottom-28 z-50 flex justify-center px-4 pointer-events-none"
       }
     >
-      <div className="pointer-events-auto w-full max-w-sm bg-paper rounded-card border border-warn shadow-2xl">
+      <div className="pointer-events-auto w-full max-w-sm bg-card rounded-card border border-warn shadow-2xl">
         <div className="flex items-center justify-between px-5 pt-4">
           <p className="label text-[10px] text-warn">Safety check-in</p>
           <p
@@ -51,7 +51,7 @@ export function CheckInCard({
           />
         </div>
         <div className="px-5 py-4 space-y-1.5">
-          <h2 id="checkInTitle" className="font-display lc text-3xl">
+          <h2 id="checkInTitle" className="text-2xl">
             Are you feeling safe?
           </h2>
           <p id="checkInBody" className="text-sm text-ink-2">
@@ -67,14 +67,14 @@ export function CheckInCard({
           <button
             ref={safe}
             onClick={() => onRespond("safe")}
-            className="min-h-[56px] flex items-center justify-center gap-2 font-display lc text-xl text-safe hover:bg-paper-2 rounded-bl-card"
+            className="min-h-[56px] flex items-center justify-center gap-2 text-[17px] font-semibold text-safe hover:bg-paper-2 rounded-bl-card"
           >
             <CheckCircle2 className="w-5 h-5" />
             I'm safe
           </button>
           <button
             onClick={() => onRespond("help")}
-            className="min-h-[56px] flex items-center justify-center gap-2 font-display lc text-xl bg-danger text-danger-ink hover:bg-danger/90 rounded-br-card"
+            className="min-h-[56px] flex items-center justify-center gap-2 text-[17px] font-semibold bg-danger text-danger-ink hover:bg-danger/90 rounded-br-card"
           >
             <Siren className="w-5 h-5" />
             Send SOS

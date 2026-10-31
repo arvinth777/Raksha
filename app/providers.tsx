@@ -42,7 +42,7 @@ function Gate({ children }: { children: ReactNode }) {
       <p className="font-mono text-xs text-ink-3">Supervised demo</p>
       <div className="max-w-sm w-full mx-auto space-y-6">
         <div className="space-y-3">
-          <h1 className="font-display lc text-7xl tracking-tight text-accent">
+          <h1 className="text-5xl tracking-tight text-accent">
             Raksha
           </h1>
           <p className="text-lg text-ink-2 leading-snug">

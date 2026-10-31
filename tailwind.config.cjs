@@ -14,6 +14,7 @@ module.exports = {
         'paper': 'oklch(var(--c-paper) / <alpha-value>)',
         'paper-2': 'oklch(var(--c-paper-2) / <alpha-value>)',
         'paper-3': 'oklch(var(--c-paper-3) / <alpha-value>)',
+        'card': 'oklch(var(--c-card) / <alpha-value>)',
         'ink': 'oklch(var(--c-ink) / <alpha-value>)',
         'ink-2': 'oklch(var(--c-ink-2) / <alpha-value>)',
         'ink-3': 'oklch(var(--c-ink-3) / <alpha-value>)',

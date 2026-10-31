@@ -42,8 +42,8 @@ export function InCallView({
 }) {
   return (
     <>
-      <section className="space-y-2">
-        <p className="label text-[10px] text-ink-3">
+      <section className="space-y-1 px-1">
+        <p className="text-[15px] text-ink-3">
           {session.mode === "demo"
             ? "Typed demo"
             : session.mode === "web"
@@ -51,7 +51,7 @@ export function InCallView({
               : "Phone call"}
         </p>
         <h1
-          className={`font-display lc text-4xl leading-tight ${
+          className={`text-[28px] leading-tight ${
             sosActive ? "text-danger" : "text-ink"
           }`}
         >
@@ -116,7 +116,7 @@ export function InCallView({
         </Panel>
       )}
       {session.mode === "live" && !callFailed && (
-        <p className="text-sm text-ink-2 border-l border-accent pl-3">
+        <p className="text-sm text-ink-2 rounded-card bg-accent-soft px-4 py-3">
           Raksha is calling your phone. Answer it in your normal dialer.
         </p>
       )}
@@ -130,7 +130,7 @@ export function InCallView({
             value={speech}
             onChange={(e) => setSpeech(e.target.value)}
             placeholder="Type what you'd say on the call"
-            className="flex-1 min-w-0 min-h-[48px] rounded-input bg-paper border border-rule px-3.5 text-sm placeholder:text-ink-3 focus:border-accent outline-none"
+            className="flex-1 min-w-0 min-h-[48px] rounded-[14px] bg-card border border-rule px-3.5 text-sm placeholder:text-ink-3 focus:border-accent outline-none"
           />
           <button
             disabled={busy || !speech.trim()}

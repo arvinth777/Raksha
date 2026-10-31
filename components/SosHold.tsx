@@ -92,12 +92,12 @@ export function SosHold({
         <span className="label text-sm font-semibold">SOS</span>
       </button>
       <div className="min-w-0">
-        <p className="font-display lc text-xl text-ink">
+        <p className="text-[17px] font-semibold text-ink">
           {active
-            ? "sos sent"
+            ? "SOS sent"
             : holding
-              ? "keep holding…"
-              : "hold to alert police"}
+              ? "Keep holding…"
+              : "Hold to alert police"}
         </p>
         <p className="text-[11px] text-ink-3">
           {active ? "Hold again to resend. " : ""}

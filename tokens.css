@@ -1,8 +1,9 @@
 /* Hallmark · genre: atmospheric · theme: lumen (day foundry: citizen app · night foundry: consoles) · design-system: design.md · designed-as-app
  * day   paper oklch(97% 0.008 265) · accent oklch(46% 0.24 268) indigo
  * night paper oklch(13% 0.014 265) · accent oklch(76% 0.17 50) molten brass
- * display: Instrument Serif (roman, lowercase) · body: Geist · mono: Geist Mono (UPPERCASE labels)
- * axes: day light / classical-serif / cool · night dark / classical-serif / warm
+ * display + body: the platform's system UI face (SF Pro / Roboto / Segoe) so the citizen app reads native
+ * mono: Geist Mono (console labels only)
+ * axes: day light / grotesk-sans / cool · night dark / grotesk-sans / warm
  */
 
 /* Colour channels (L C H) so Tailwind can apply alpha: oklch(var(--c-x) / a). */
@@ -10,6 +11,7 @@
   --c-paper: 97% 0.008 265;
   --c-paper-2: 94% 0.011 265;
   --c-paper-3: 90% 0.014 265;
+  --c-card: 100% 0 0;
   --c-ink: 18% 0.014 265;
   --c-ink-2: 38% 0.016 265;
   --c-ink-3: 52% 0.014 265;
@@ -29,8 +31,8 @@
   --color-ink: oklch(var(--c-ink));
   --color-focus: oklch(var(--c-focus));
 
-  --font-display: var(--font-instrument), "Instrument Serif", ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-geist), "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), "Geist Mono", ui-monospace, SFMono-Regular, monospace;
 
   --space-3xs: 0.25rem;
@@ -54,7 +56,7 @@
   --dur-short: 160ms;
   --dur-med: 240ms;
 
-  --radius-card: 14px;
+  --radius-card: 18px;
   --radius-input: 10px;
   --radius-pill: 999px;
 }
@@ -64,6 +66,7 @@
   --c-paper: 13% 0.014 265;
   --c-paper-2: 17% 0.016 265;
   --c-paper-3: 22% 0.018 265;
+  --c-card: 17% 0.016 265;
   --c-ink: 96% 0.006 262;
   --c-ink-2: 80% 0.012 262;
   --c-ink-3: 63% 0.016 262;
