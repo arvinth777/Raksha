@@ -81,26 +81,54 @@ for (const operation of ["check-in", "sos", "acknowledge"] as const)
     path: `/vaani/tools/${operation}`,
     method: "POST",
     handler: httpAction(async (ctx, req) => {
-      const token = req.headers.get("Authorization")?.replace(/^Bearer /, "");
-      if (!token || !/^[a-f0-9]{64}$/.test(token))
-        return new Response("Unauthorized", { status: 401 });
       let body: Record<string, unknown>;
       try {
         body = record(JSON.parse(await boundedBody(req)));
       } catch {
         return new Response("Invalid payload", { status: 400 });
       }
+      // Header when the tool can template it; otherwise the agent passes {{raksha_tool_token}} in the body.
+      const token =
+        req.headers.get("Authorization")?.replace(/^Bearer /, "") ||
+        (typeof body.session_token === "string"
+          ? body.session_token.trim()
+          : "");
+      if (!/^[a-f0-9]{64}$/.test(token))
+        return Response.json(
+          { ok: false, message: "Could not confirm: invalid session token." },
+          { status: 401 },
+        );
       if (typeof body.reason !== "string" || body.reason.length > 500)
-        return new Response("Invalid reason", { status: 400 });
+        return Response.json(
+          {
+            ok: false,
+            message: "Could not confirm: a short reason is required.",
+          },
+          { status: 400 },
+        );
       try {
         const result = await ctx.runMutation(internal.ingest.tool, {
           token,
           operation,
           reason: body.reason,
         });
-        return Response.json(result);
+        // Plain-language outcome so the agent reports exactly what happened.
+        const message =
+          operation === "sos"
+            ? "SOS recorded. The police contact is being called now. Do not say help has arrived."
+            : operation === "check-in"
+              ? "Safety check-in started. Ask the caller: are you feeling safe?"
+              : "Acknowledgement recorded.";
+        return Response.json({ ok: true, message, ...result });
       } catch {
-        return new Response("Rejected", { status: 403 });
+        return Response.json(
+          {
+            ok: false,
+            message:
+              "Could not confirm the action. Tell the caller you could not confirm it.",
+          },
+          { status: 403 },
+        );
       }
     }),
   });

@@ -57,7 +57,10 @@ export const run = internalAction({
       work.purpose === "responder"
         ? await policeBrief(ctx, work.sessionId)
         : null;
+    // Per-call tool capability; the agent passes it back as session_token when it uses a Raksha tool.
+    const toolToken = randomBytes(32).toString("hex");
     const metadata = {
+      raksha_tool_token: toolToken,
       raksha_session_id: work.sessionId,
       purpose: work.purpose,
       ...brief?.fields,
@@ -133,7 +136,7 @@ export const run = internalAction({
               webUrl: rtcUrl(output.connection_url),
             }
           : {}),
-        toolToken: randomBytes(32).toString("hex"),
+        toolToken,
       });
     } catch (e) {
       await ctx.runMutation(internal.jobs.finish, {
@@ -164,6 +167,8 @@ async function policeBrief(
   const fields = {
     user_name: who.name,
     user_phone: who.phone,
+    // TTS reads "+91 82489 23485" as large numbers; space the digits so it says them one by one.
+    user_phone_spoken: spellPhone(who.phone),
     alert_reason: view?.incident?.reason ?? "SOS requested",
     incident_address: address ?? "unavailable",
     incident_location: loc
@@ -189,7 +194,7 @@ async function policeBrief(
       : ` They recently said: ${fields.recent_statements}.`;
   return {
     fields,
-    message: `Hello, this is Raksha, an automated safety assistant, with a demo police alert. ${fields.user_name} needs assistance. Their phone number is ${fields.user_phone}. Reason: ${fields.alert_reason}. ${where}${said} Please confirm you have received this alert. This is a demonstration; no real emergency service has been contacted.`,
+    message: `Hello, this is Raksha, an automated safety assistant, with a demo police alert. ${fields.user_name} needs assistance. Their phone number is ${fields.user_phone_spoken}. Reason: ${fields.alert_reason}. ${where}${said} Please confirm you have received this alert. This is a demonstration; no real emergency service has been contacted.`,
   };
 }
 
@@ -215,4 +220,23 @@ async function streetAddress(lat: number, lon: number) {
   } catch {
     return null;
   }
+}
+
+// TTS reads "+91 82489 23485" as large numbers; spell every digit as a word instead.
+const DIGITS = "zero one two three four five six seven eight nine".split(" ");
+export function spellPhone(phone: string) {
+  if (!/\d/.test(phone)) return phone;
+  return (
+    (phone.startsWith("+") ? "plus " : "") +
+    phone
+      .replace("+", "")
+      .split(" ")
+      .map((group) =>
+        group
+          .split("")
+          .map((d) => DIGITS[Number(d)] ?? d)
+          .join(" "),
+      )
+      .join(", ")
+  );
 }

@@ -197,7 +197,11 @@ export const tool = internalMutation({
     if (job.purpose !== "user") throw Error("FORBIDDEN");
     if (a.operation === "sos")
       return {
-        incidentId: await sos(ctx, s._id, "Explicit SOS reported by agent"),
+        incidentId: await sos(
+          ctx,
+          s._id,
+          a.reason.trim() || "SOS requested on the call",
+        ),
       };
     await event(ctx, s._id, "agent.concern", a.reason);
     return { checkInId: await checkIn(ctx, s._id, "risk") };

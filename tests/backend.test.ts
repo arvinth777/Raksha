@@ -583,3 +583,37 @@ describe("webrtc dispatch", () => {
     expect(() => rtcUrl("http://server.vaanivoice.ai")).toThrow();
   });
 });
+describe("agent tools", () => {
+  it("SOS tool accepts the per-call token in the body and keeps the agent's reason", async () => {
+    const { t, id } = await setup();
+    const token = "a".repeat(64);
+    await t.run(async (ctx) => {
+      const j = await ctx.db.query("jobs").first();
+      await ctx.db.patch(j!._id, { toolToken: token });
+    });
+    const bad = await t.fetch("/vaani/tools/sos", {
+      method: "POST",
+      body: JSON.stringify({ session_token: "b".repeat(64), reason: "x" }),
+    });
+    expect(bad.status).toBe(403);
+    const ok = await t.fetch("/vaani/tools/sos", {
+      method: "POST",
+      body: JSON.stringify({
+        session_token: token,
+        reason: "Caller says a man is following her near HSR Layout",
+      }),
+    });
+    expect((await ok.json()).ok).toBe(true);
+    const s = await t.query(internal.sessions.inspect, { sessionId: id });
+    expect(s!.incident?.reason).toBe(
+      "Caller says a man is following her near HSR Layout",
+    );
+  });
+});
+it("spells phone digits as words for the voice briefing", async () => {
+  const { spellPhone } = await import("../convex/dispatch");
+  expect(spellPhone("+91 82489 23485")).toBe(
+    "plus nine one, eight two four eight nine, two three four eight five",
+  );
+  expect(spellPhone("unavailable")).toBe("unavailable");
+});
