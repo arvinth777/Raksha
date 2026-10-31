@@ -1,0 +1,18 @@
+{
+  "name": "Rasha — Personal Safety Harbor",
+  "short_name": "Rasha",
+  "description": "Call-first personal safety companion and emergency dispatch",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf9f2",
+  "theme_color": "#003629",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

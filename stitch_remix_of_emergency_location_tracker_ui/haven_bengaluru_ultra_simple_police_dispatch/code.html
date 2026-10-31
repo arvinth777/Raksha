@@ -1,0 +1,138 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bengaluru Police 112 Suraksha - Command Dispatch</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "bengaluru-darkest": "#09120f",
+            "bengaluru-dark": "#0e1a16",
+            "bengaluru-surface": "#142520",
+            "bengaluru-card": "#182e27",
+            "bengaluru-card-hover": "#1f3a32",
+            "bengaluru-border": "#244238",
+            "bengaluru-primary": "#1b4d3e",
+            "bengaluru-accent": "#2dd4bf",
+            "bengaluru-glow": "#9ed1bd",
+            "alert-red": "#dc2626",
+            "alert-red-bg": "#450a0a",
+            "alert-yellow": "#f59e0b",
+            "alert-yellow-bg": "#451a03",
+            "alert-green": "#10b981",
+            "alert-green-bg": "#064e3b"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            display: ["Plus Jakarta Sans", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0e1a16;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #244238;
+      border-radius: 4px;
+    }
+    .radar-pulse {
+      animation: pulse-ring 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.9); opacity: 0.9; }
+      50% { transform: scale(1.6); opacity: 0.3; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+  </style>
+</head>
+<body class="bg-bengaluru-darkest text-slate-100 flex flex-col h-screen w-screen overflow-hidden select-none font-sans antialiased">
+<!-- TOP HEADER / DISPATCH APP BAR -->
+<header class="flex justify-between items-center w-full px-6 py-3.5 bg-bengaluru-dark border-b border-bengaluru-border z-50 shrink-0"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-bengaluru-primary border border-bengaluru-accent/30 flex items-center justify-center text-bengaluru-accent shadow-sm"><span class="material-symbols-outlined text-xl font-bold">shield</span></div><div class="flex items-center gap-2.5"><span class="font-display font-bold text-base tracking-tight text-white">Raksha • 112 Suraksha</span><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-bengaluru-surface text-slate-300 border border-bengaluru-border">Bengaluru</span></div></div><div class="flex items-center gap-4"><div class="flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/60 border border-red-500/40"><span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span><span class="text-xs font-semibold text-red-200">1 Active Emergency</span></div><div class="flex items-center gap-2 text-xs text-slate-300"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="">Officer on Duty: <strong class="text-white">Insp. R. Gowda</strong></span></div></div></header>
+<!-- 3-COLUMN WORKSPACE: CLEAN, HIGH CONTRAST & STRESS-FREE -->
+<div class="flex-1 flex overflow-hidden w-full">
+<!-- COLUMN 1: ACTIVE INCIDENTS (CLEAN TRIAGE QUEUE) -->
+<aside class="w-80 lg:w-[350px] flex flex-col bg-bengaluru-dark border-r border-bengaluru-border shrink-0 select-none"><div class="p-4 border-b border-bengaluru-border flex items-center justify-between"><span class="font-display font-bold text-sm text-white">Active Emergency</span><span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-600 text-white">High Priority</span></div><div class="p-3"><div class="relative bg-bengaluru-card border-2 border-red-500 rounded-xl p-4 shadow-lg"><div class="flex items-start justify-between"><h3 class="font-display font-bold text-base text-white">Sreenithi</h3><span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-red-600 text-white animate-pulse">CRITICAL</span></div><p class="text-xs text-slate-300 mt-1">24 yrs • Walking Alone</p><div class="mt-3 pt-3 border-t border-bengaluru-border text-xs text-slate-300 space-y-1.5"><div class=""><span class="text-slate-400">Location:</span> Indiranagar 100ft Rd</div><div><span class="text-slate-400">Status:</span> <span class="text-red-400 font-semibold">Timer Expired (2m 14s)</span></div><div class=""><span class="text-slate-400">Phone:</span> +91 98450 12894</div></div></div></div></aside>
+<!-- COLUMN 2: CENTER CLEAN MAP VIEW -->
+<main class="flex-1 flex flex-col relative bg-[#0a1511] overflow-hidden border-r border-bengaluru-border">
+<!-- Map Header Overlay: High Legibility Location Capsule -->
+<div class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none"><div class="pointer-events-auto flex items-center gap-2.5 bg-bengaluru-dark/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-bengaluru-border shadow-xl"><span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span><span class="font-display font-bold text-xs text-white"><h2 class="font-display font-bold text-base text-white cursor-text" spellcheck="false" data-stitch-added-classes="cursor-text" style="--tw-border-spacing-x: 0; --tw-border-spacing-y: 0; --tw-translate-x: 0; --tw-translate-y: 0; --tw-rotate: 0; --tw-skew-x: 0; --tw-skew-y: 0; --tw-scale-x: 1; --tw-scale-y: 1; --tw-pan-x: ; --tw-pan-y: ; --tw-pinch-zoom: ; --tw-scroll-snap-strictness: proximity; --tw-gradient-from-position: ; --tw-gradient-via-position: ; --tw-gradient-to-position: ; --tw-ordinal: ; --tw-slashed-zero: ; --tw-numeric-figure: ; --tw-numeric-spacing: ; --tw-numeric-fraction: ; --tw-ring-inset: ; --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-color: rgb(59 130 246 / 0.5); --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000; --tw-blur: ; --tw-brightness: ; --tw-contrast: ; --tw-grayscale: ; --tw-hue-rotate: ; --tw-invert: ; --tw-saturate: ; --tw-sepia: ; --tw-drop-shadow: ; --tw-backdrop-blur: ; --tw-backdrop-brightness: ; --tw-backdrop-contrast: ; --tw-backdrop-grayscale: ; --tw-backdrop-hue-rotate: ; --tw-backdrop-invert: ; --tw-backdrop-opacity: ; --tw-backdrop-saturate: ; --tw-backdrop-sepia: ; --tw-contain-size: ; --tw-contain-layout: ; --tw-contain-paint: ; --tw-contain-style: ; --tw-text-opacity: 1; color: rgb(255, 255, 255); background-color: rgb(20, 37, 32); user-select: text !important; outline: none !important; box-shadow: none !important;">Sreenithi</h2></span><span class="text-slate-500">•</span><span class="text-xs text-emerald-300">Indiranagar 100ft Rd</span></div></div>
+<!-- SIMULATED HIGH-CONTRAST STREET MAP (BENGALURU INDIRANAGAR 100FT ROAD) -->
+<div class="relative w-full h-full bg-[#0b1612] overflow-hidden flex items-center justify-center">
+<!-- Grid Pattern simulating urban layout -->
+<div class="absolute inset-0 opacity-25 bg-[linear-gradient(to_right,#1b3b30_1px,transparent_1px),linear-gradient(to_bottom,#1b3b30_1px,transparent_1px)] bg-[size:48px_48px]"></div>
+<!-- Bangalore Arterial Roads SVG overlay -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<!-- 100ft Road Main Corridor -->
+<line stroke="#1e4d3d" stroke-linecap="round" stroke-width="26" x1="45%" x2="55%" y1="0%" y2="100%"></line>
+<line opacity="0.4" stroke="#34d399" stroke-dasharray="10 8" stroke-width="2" x1="45%" x2="55%" y1="0%" y2="100%"></line>
+<!-- Cross Streets: 12th Main Indiranagar -->
+<line stroke="#173e31" stroke-linecap="round" stroke-width="16" x1="0%" x2="100%" y1="48%" y2="52%"></line>
+<!-- CMH Road Connector -->
+<line stroke="#14362a" stroke-linecap="round" stroke-width="12" x1="0%" x2="100%" y1="24%" y2="28%"></line>
+<!-- Domlur Ring Road Link -->
+<line stroke="#14362a" stroke-linecap="round" stroke-width="12" x1="0%" x2="100%" y1="76%" y2="80%"></line>
+<!-- Hoysala #14 Intercept Trajectory Line -->
+<line stroke="#2dd4bf" stroke-dasharray="6 6" stroke-linecap="round" stroke-width="3" x1="38%" x2="50%" y1="36%" y2="50%"></line>
+<!-- Citizen Walking Trail (Prior 5 minutes) -->
+<path d="M 520,720 L 512,620 L 500,500" fill="none" opacity="0.6" stroke="#f59e0b" stroke-dasharray="4 6" stroke-width="3"></path>
+</svg>
+<!-- MAP MARKER: TARGET CITIZEN (ELENA VANCE) -->
+<div class="absolute z-30 flex flex-col items-center" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
+<!-- Multi-ring pulse for instant glanceability -->
+<div class="relative flex items-center justify-center">
+<span class="absolute w-16 h-16 rounded-full bg-red-500/30 radar-pulse"></span>
+<span class="absolute w-10 h-10 rounded-full bg-red-600/50 animate-ping"></span>
+<div class="w-8 h-8 rounded-full bg-red-600 border-2 border-white flex items-center justify-center shadow-2xl text-white font-bold text-sm">
+<span class="material-symbols-outlined text-lg">person</span>
+</div>
+</div>
+<!-- Clean Prominent Label -->
+<div class="mt-2.5 bg-bengaluru-darkest/95 border-2 border-red-500 px-3.5 py-1.5 rounded-xl shadow-2xl backdrop-blur-md text-center">
+<div class="font-display font-bold text-white text-xs flex items-center gap-1.5 justify-center">
+<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span><h2 class="font-display font-bold text-base text-white cursor-text" spellcheck="false" data-stitch-added-classes="cursor-text" style="--tw-border-spacing-x: 0; --tw-border-spacing-y: 0; --tw-translate-x: 0; --tw-translate-y: 0; --tw-rotate: 0; --tw-skew-x: 0; --tw-skew-y: 0; --tw-scale-x: 1; --tw-scale-y: 1; --tw-pan-x: ; --tw-pan-y: ; --tw-pinch-zoom: ; --tw-scroll-snap-strictness: proximity; --tw-gradient-from-position: ; --tw-gradient-via-position: ; --tw-gradient-to-position: ; --tw-ordinal: ; --tw-slashed-zero: ; --tw-numeric-figure: ; --tw-numeric-spacing: ; --tw-numeric-fraction: ; --tw-ring-inset: ; --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-color: rgb(59 130 246 / 0.5); --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000; --tw-blur: ; --tw-brightness: ; --tw-contrast: ; --tw-grayscale: ; --tw-hue-rotate: ; --tw-invert: ; --tw-saturate: ; --tw-sepia: ; --tw-drop-shadow: ; --tw-backdrop-blur: ; --tw-backdrop-brightness: ; --tw-backdrop-contrast: ; --tw-backdrop-grayscale: ; --tw-backdrop-hue-rotate: ; --tw-backdrop-invert: ; --tw-backdrop-opacity: ; --tw-backdrop-saturate: ; --tw-backdrop-sepia: ; --tw-contain-size: ; --tw-contain-layout: ; --tw-contain-paint: ; --tw-contain-style: ; --tw-text-opacity: 1; color: rgb(255, 255, 255); text-align: start; background-color: rgb(20, 37, 32); user-select: text !important; outline: none !important; box-shadow: none !important;">Sreenithi</h2>(Suraksha Alert)
+            </div>
+<div class="text-[11px] text-red-300 font-semibold mt-0.5">Indiranagar 100ft Rd • Timer Expired</div>
+</div>
+</div>
+<!-- MAP MARKER: NEAREST PATROL UNIT (HOYSALA PATROL #14) -->
+<div class="absolute z-30 flex flex-col items-center" style="top: 36%; left: 38%; transform: translate(-50%, -50%);">
+<div class="w-9 h-9 rounded-full bg-emerald-500 text-bengaluru-darkest border-2 border-white shadow-xl flex items-center justify-center font-bold">
+<span class="material-symbols-outlined text-xl">local_police</span>
+</div>
+<div class="mt-2 bg-bengaluru-dark/95 border border-emerald-500/60 px-3 py-1 rounded-lg shadow-lg text-center backdrop-blur-sm">
+<div class="text-xs font-bold text-emerald-300">Hoysala Patrol #14</div>
+<div class="text-[11px] text-white font-semibold">500m Away • <span class="text-amber-300">ETA ~2 mins</span></div>
+</div>
+</div>
+<!-- MAP MARKER: VERIFIED SAFE SPOT (MEDPLUS 24/7 PHARMACY) -->
+</div>
+<!-- MAP BOTTOM BAR: RAPID SITUATIONAL SUMMARY -->
+<div class="absolute bottom-4 left-4 right-4 z-20 pointer-events-none flex items-center justify-between"><div></div><div class="pointer-events-auto flex items-center gap-1 bg-bengaluru-dark/95 border border-bengaluru-border p-1 rounded-xl shadow-xl"><button class="p-1.5 text-slate-300 hover:text-white hover:bg-bengaluru-surface rounded-lg" title="Zoom In"><span class="material-symbols-outlined text-lg">add</span></button><button class="p-1.5 text-slate-300 hover:text-white hover:bg-bengaluru-surface rounded-lg" title="Zoom Out"><span class="material-symbols-outlined text-lg">remove</span></button></div></div>
+</main>
+<!-- COLUMN 3: QUICK-ACTION DISPATCH TERMINAL (NO CLUTTER, BIG BUTTONS) -->
+<section class="w-88 lg:w-[380px] xl:w-[410px] flex flex-col bg-bengaluru-dark shrink-0 overflow-y-auto custom-scrollbar"><div class="p-4 bg-bengaluru-surface border-b border-bengaluru-border"><div class="flex items-center justify-between"><h2 class="font-display font-bold text-base text-white">Sreenithi(24 yrs)</h2><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-red-950/80 text-red-400 border border-red-500/40">Timer Expired</span></div><p class="text-xs text-slate-300 mt-1">Needs Immediate Assistance</p></div><div class="p-4 border-b border-bengaluru-border space-y-3 bg-bengaluru-dark"><div class="flex items-center justify-between text-xs"><span class="text-slate-400">Live Location</span><span class="font-medium text-white">Indiranagar 100ft Rd</span></div><div class="flex items-center justify-between text-xs"><span class="text-slate-400">Citizen Phone</span><span class="font-medium text-emerald-400">+91 98450 12894</span></div><div class="flex items-center justify-between text-xs"><span class="text-slate-400">Emergency Contact</span><span class="font-medium text-white">Rajesh&nbsp; (+91 98450 99214)</span></div><div class="flex items-center justify-between text-xs"><span class="text-slate-400">Phone Battery</span><span class="font-medium text-emerald-400">86%</span></div></div><div class="p-4 border-b border-bengaluru-border bg-bengaluru-surface"><div class="text-[11px] font-bold text-amber-400 mb-1">TRANSCRIBED AUDIO:</div><p class="text-xs italic text-slate-200 leading-relaxed">"Someone is following me closely near the metro exit..."</p></div><div class="p-4 flex-1 flex flex-col justify-end space-y-3 bg-bengaluru-dark"><button class="w-full py-4 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-display font-bold text-sm flex items-center justify-center gap-2 shadow-xl border border-emerald-400/40 transition-all"><span class="material-symbols-outlined text-xl">bolt</span><span class="">DISPATCH HOYSALA #14 (ETA ~2 MINS)</span></button><button class="w-full py-3 px-4 rounded-xl bg-bengaluru-card hover:bg-bengaluru-card-hover active:scale-[0.98] text-white font-semibold text-xs flex items-center justify-center gap-2 border border-bengaluru-border transition-all"><span class="material-symbols-outlined text-base text-bengaluru-accent">call</span><span class="">Call Sreenithi / Open Audio Line</span></button><div class="pt-2 text-center"><button class="text-xs text-slate-400 hover:text-slate-200 transition-colors inline-flex items-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span> Mark Safe / False Alarm</button></div></div></section>
+</div>
+
+
+
+
+</body></html>

@@ -1,0 +1,50 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: 'class',
+  content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#003629',
+        'primary-container': '#1b4d3e',
+        'on-primary': '#ffffff',
+        'on-primary-container': '#8abda9',
+        'primary-fixed': '#baeed9',
+        'primary-fixed-dim': '#9ed1bd',
+        'on-primary-fixed': '#002117',
+        'on-primary-fixed-variant': '#1d4f40',
+        surface: '#fbf9f2',
+        'surface-container-lowest': '#ffffff',
+        'surface-container-low': '#f6f4ed',
+        'surface-container': '#f0eee7',
+        'surface-container-high': '#eae8e1',
+        'surface-container-highest': '#e4e2dc',
+        'on-surface': '#1b1c18',
+        'on-surface-variant': '#404945',
+        outline: '#707974',
+        'outline-variant': '#c0c9c3',
+        error: '#ba1a1a',
+        'error-container': '#ffdad6',
+        'on-error': '#ffffff',
+        'on-error-container': '#93000a',
+        'bengaluru-dark': '#070d18',
+        'bengaluru-surface': '#0f172a',
+        'bengaluru-card': '#1e293b',
+        'bengaluru-card-hover': '#334155',
+        'bengaluru-border': '#334155',
+        'bengaluru-accent': '#10b981',
+      },
+      fontFamily: {
+        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+};
+
