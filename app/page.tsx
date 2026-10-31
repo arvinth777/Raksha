@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useMutation, useQuery, useAction } from "convex/react";
 import { ConvexError } from "convex/values";
 import { VoiceCall } from "../components/VoiceCall";
+import { Readiness } from "../components/Readiness";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import {
@@ -288,7 +289,7 @@ export default function RakshaUserApp() {
       <div className="w-full max-w-md flex-1 flex flex-col">
         {/* Header */}
         <header className="sticky top-0 z-40 h-14 px-5 flex items-center justify-between bg-paper/90 backdrop-blur-md border-b border-rule">
-          <span className="font-display text-xl font-bold tracking-tight text-accent">
+          <span className="font-display lc text-2xl tracking-tight text-accent">
             Raksha
           </span>
           <div className="flex items-center gap-3">
@@ -338,7 +339,7 @@ export default function RakshaUserApp() {
             <>
               <section className="space-y-2">
                 <p className="text-sm text-ink-3">Hi {firstName}</p>
-                <h1 className="font-display text-4xl font-bold leading-[1.05] text-ink">
+                <h1 className="font-display lc text-5xl leading-[1] text-ink">
                   Feeling unsafe?
                 </h1>
                 <p className="text-ink-2 leading-relaxed">
@@ -347,6 +348,36 @@ export default function RakshaUserApp() {
                 </p>
               </section>
 
+              <Readiness
+                rows={[
+                  {
+                    label: "Voice",
+                    value:
+                      callMode === "web"
+                        ? "in-app mic"
+                        : callMode === "live"
+                          ? "phone dialer"
+                          : "typed",
+                    ok: true,
+                  },
+                  {
+                    label: "Location",
+                    value:
+                      geoPermissionState === "granted"
+                        ? "shared"
+                        : geoPermissionState === "denied"
+                          ? "blocked"
+                          : "not shared",
+                    ok: geoPermissionState === "granted",
+                  },
+                  { label: "Police", value: "stand-in ready", ok: true },
+                  {
+                    label: "Check-ins",
+                    value: autoEscalate ? "alert if missed" : "listen only",
+                    ok: autoEscalate,
+                  },
+                ]}
+              />
               <section className="space-y-3">
                 <button
                   id="heroComfortBtn"
@@ -355,7 +386,7 @@ export default function RakshaUserApp() {
                   className="group w-full min-h-[112px] rounded-card bg-accent text-accent-ink px-6 py-5 flex items-center justify-between gap-4 text-left transition-[transform,background-color] duration-150 ease-out hover:bg-accent/90 active:translate-y-px disabled:opacity-70"
                 >
                   <span>
-                    <span className="block font-display text-2xl font-bold">
+                    <span className="block font-display lc text-3xl">
                       {busy ? "Starting…" : "Talk to Raksha"}
                     </span>
                     <span className="block text-sm text-accent-ink/75 mt-1">
@@ -457,7 +488,7 @@ export default function RakshaUserApp() {
                       : "Phone call"}
                 </p>
                 <h1
-                  className={`font-display text-3xl font-bold leading-tight ${
+                  className={`font-display lc text-4xl leading-tight ${
                     sosActive ? "text-danger" : "text-ink"
                   }`}
                 >
@@ -615,7 +646,7 @@ export default function RakshaUserApp() {
             id="sosButton"
             onClick={handleSos}
             disabled={busy}
-            className="w-full min-h-[60px] rounded-card bg-danger text-danger-ink font-display text-lg font-bold flex items-center justify-center gap-2.5 transition-[transform,background-color] duration-150 ease-out hover:bg-danger/90 active:translate-y-px disabled:opacity-70"
+            className="w-full min-h-[60px] rounded-card bg-danger text-danger-ink font-semibold text-base tracking-wide flex items-center justify-center gap-2.5 transition-[transform,background-color] duration-150 ease-out hover:bg-danger/90 active:translate-y-px disabled:opacity-70"
           >
             <Siren className="w-5 h-5" />
             {sosActive ? "SOS sent · send again" : "SOS · Alert police"}
@@ -651,10 +682,7 @@ export default function RakshaUserApp() {
                 </p>
               </div>
               <div className="space-y-1.5">
-                <h2
-                  id="checkInTitle"
-                  className="font-display text-2xl font-bold"
-                >
+                <h2 id="checkInTitle" className="font-display lc text-3xl">
                   Are you feeling safe?
                 </h2>
                 <p className="text-sm text-ink-2">

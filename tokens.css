@@ -1,35 +1,35 @@
-/* Hallmark · genre: atmospheric · theme: custom (vibe: "calm protection by day, night-watch console") · design-system: design.md · designed-as-app
- * day   paper oklch(97.5% 0.008 150) · accent oklch(38% 0.07 165) forest
- * night paper oklch(17% 0.02 250)    · accent oklch(80% 0.11 165) mint
- * display: Bricolage Grotesque · body: Geist · mono: Geist Mono
- * axes: day light / grotesk-sans / chromatic-other(green) · night dark / grotesk-sans / chromatic-other(green)
+/* Hallmark · genre: atmospheric · theme: lumen (day foundry: citizen app · night foundry: consoles) · design-system: design.md · designed-as-app
+ * day   paper oklch(97% 0.008 265) · accent oklch(46% 0.24 268) indigo
+ * night paper oklch(13% 0.014 265) · accent oklch(76% 0.17 50) molten brass
+ * display: Instrument Serif (roman, lowercase) · body: Geist · mono: Geist Mono (UPPERCASE labels)
+ * axes: day light / classical-serif / cool · night dark / classical-serif / warm
  */
 
 /* Colour channels (L C H) so Tailwind can apply alpha: oklch(var(--c-x) / a). */
 :root {
-  --c-paper: 97.5% 0.008 150;
-  --c-paper-2: 94.5% 0.012 150;
-  --c-paper-3: 90.5% 0.016 150;
-  --c-ink: 24% 0.035 160;
-  --c-ink-2: 40% 0.028 160;
-  --c-ink-3: 53% 0.022 160;
-  --c-rule: 86% 0.016 155;
-  --c-accent: 38% 0.07 165;
-  --c-accent-soft: 91% 0.045 165;
-  --c-accent-ink: 98% 0.01 160;
-  --c-danger: 50% 0.19 25;
-  --c-danger-soft: 93% 0.035 25;
-  --c-danger-ink: 98.5% 0.008 25;
-  --c-warn: 70% 0.15 70;
-  --c-warn-soft: 94% 0.05 80;
-  --c-safe: 58% 0.13 155;
-  --c-focus: 55% 0.17 255;
+  --c-paper: 97% 0.008 265;
+  --c-paper-2: 94% 0.011 265;
+  --c-paper-3: 90% 0.014 265;
+  --c-ink: 18% 0.014 265;
+  --c-ink-2: 38% 0.016 265;
+  --c-ink-3: 52% 0.014 265;
+  --c-rule: 87% 0.012 265;
+  --c-accent: 46% 0.24 268;
+  --c-accent-soft: 93% 0.04 268;
+  --c-accent-ink: 98% 0.006 265;
+  --c-danger: 52% 0.2 25;
+  --c-danger-soft: 94% 0.03 25;
+  --c-danger-ink: 98.5% 0.006 25;
+  --c-warn: 66% 0.15 70;
+  --c-warn-soft: 95% 0.045 80;
+  --c-safe: 56% 0.13 160;
+  --c-focus: 55% 0.2 268;
 
   --color-paper: oklch(var(--c-paper));
   --color-ink: oklch(var(--c-ink));
   --color-focus: oklch(var(--c-focus));
 
-  --font-display: var(--font-bricolage), "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument), "Instrument Serif", ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-geist), "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), "Geist Mono", ui-monospace, SFMono-Regular, monospace;
 
@@ -54,28 +54,28 @@
   --dur-short: 160ms;
   --dur-med: 240ms;
 
-  --radius-card: 20px;
-  --radius-input: 12px;
+  --radius-card: 14px;
+  --radius-input: 10px;
   --radius-pill: 999px;
 }
 
-/* Night watch: police desk + ops console. Same roles, inverted ground. */
+/* Night Foundry: police desk + ops console. Same roles, emitting brass on violet-black. */
 [data-theme="night"] {
-  --c-paper: 17% 0.02 250;
-  --c-paper-2: 21% 0.024 250;
-  --c-paper-3: 26.5% 0.026 250;
-  --c-ink: 95% 0.008 250;
-  --c-ink-2: 80% 0.014 250;
-  --c-ink-3: 64% 0.018 250;
-  --c-rule: 31% 0.024 250;
-  --c-accent: 80% 0.11 165;
-  --c-accent-soft: 30% 0.05 165;
-  --c-accent-ink: 18% 0.03 165;
-  --c-danger: 64% 0.2 25;
-  --c-danger-soft: 27% 0.07 25;
-  --c-danger-ink: 98% 0.01 25;
-  --c-warn: 80% 0.14 75;
-  --c-warn-soft: 28% 0.05 75;
-  --c-safe: 74% 0.13 155;
-  --c-focus: 72% 0.14 255;
+  --c-paper: 13% 0.014 265;
+  --c-paper-2: 17% 0.016 265;
+  --c-paper-3: 22% 0.018 265;
+  --c-ink: 96% 0.006 262;
+  --c-ink-2: 80% 0.012 262;
+  --c-ink-3: 63% 0.016 262;
+  --c-rule: 28% 0.018 265;
+  --c-accent: 76% 0.17 50;
+  --c-accent-soft: 27% 0.06 50;
+  --c-accent-ink: 16% 0.03 50;
+  --c-danger: 65% 0.2 22;
+  --c-danger-soft: 26% 0.07 22;
+  --c-danger-ink: 98% 0.008 22;
+  --c-warn: 86% 0.15 98;
+  --c-warn-soft: 27% 0.05 98;
+  --c-safe: 76% 0.13 160;
+  --c-focus: 78% 0.14 268;
 }

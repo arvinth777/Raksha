@@ -88,7 +88,7 @@ function PoliceDesk() {
       <header className="shrink-0 px-4 py-2.5 bg-paper-2 border-b border-rule flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Siren className="w-5 h-5 text-danger" />
-          <h1 className="font-bold text-lg">Raksha · Police desk</h1>
+          <h1 className="font-display lc text-2xl">raksha · police desk</h1>
           <span className="text-[11px] px-2 py-0.5 rounded bg-warn-soft text-warn border border-warn/40 font-mono">
             DEMO STAND-IN
           </span>
@@ -289,7 +289,46 @@ function PoliceDesk() {
             </section>
           </main>
         ) : (
-          <div className="hidden md:block" />
+          <section
+            aria-label="Standing by"
+            className="md:col-span-2 flex flex-col items-center justify-center gap-6 rounded-2xl border border-rule min-h-[360px]"
+          >
+            <svg
+              aria-hidden
+              viewBox="0 0 120 120"
+              className="w-40 h-40 text-accent"
+              fill="none"
+              stroke="currentColor"
+            >
+              <circle cx="60" cy="60" r="56" strokeOpacity="0.15" />
+              <circle
+                cx="60"
+                cy="60"
+                r="42"
+                strokeOpacity="0.25"
+                strokeDasharray="2 4"
+              />
+              <circle cx="60" cy="60" r="28" strokeOpacity="0.4" />
+              <path
+                d="M60 4v14M60 102v14M4 60h14M102 60h14"
+                strokeOpacity="0.3"
+              />
+              <circle
+                cx="60"
+                cy="60"
+                r="5"
+                fill="currentColor"
+                stroke="none"
+                className="animate-pulse"
+              />
+            </svg>
+            <div className="text-center space-y-2">
+              <h2 className="font-display lc text-4xl text-ink">standing by</h2>
+              <p className="label text-[11px] text-ink-3">
+                Listening for SOS · alerts appear here instantly
+              </p>
+            </div>
+          </section>
         )}
 
         {/* Location, briefing, acknowledge */}

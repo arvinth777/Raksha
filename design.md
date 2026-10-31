@@ -13,29 +13,29 @@ atmospheric, two-mode: **Day** (woman's app, calm, protective) and **Night**
 - Consoles (`/police`, `/ops`): three-pane workbench: list · live transcript (largest) · details/actions.
   Locks to one viewport from tablet width up; stacks on phones.
 
-## Theme (custom: "calm protection by day, night-watch console")
+## Theme (Lumen: Day Foundry for the citizen app, Night Foundry for the consoles)
 Channels live in `tokens.css` as `--c-*` (L C H) so Tailwind can apply alpha.
 
-| Role | Day | Night |
+| Role | Day (citizen app) | Night (`data-theme="night"`, consoles) |
 |---|---|---|
-| paper | oklch(97.5% 0.008 150) | oklch(17% 0.02 250) |
-| paper-2 / paper-3 | 94.5% / 90.5% | 21% / 26.5% |
-| ink / ink-2 / ink-3 | 24% / 40% / 53% (H160) | 95% / 80% / 64% (H250) |
-| rule | oklch(86% 0.016 155) | oklch(31% 0.024 250) |
-| accent (brand forest) | oklch(38% 0.07 165) | oklch(80% 0.11 165) |
-| danger (SOS only) | oklch(50% 0.19 25) | oklch(64% 0.2 25) |
-| warn (check-ins only) | oklch(70% 0.15 70) | oklch(80% 0.14 75) |
-| safe | oklch(58% 0.13 155) | oklch(74% 0.13 155) |
-| focus | oklch(55% 0.17 255) | oklch(72% 0.14 255) |
+| paper / paper-2 / paper-3 | 97 / 94 / 90 % L, H265 | 13 / 17 / 22 % L, H265 |
+| ink / ink-2 / ink-3 | 18 / 38 / 52 % L | 96 / 80 / 63 % L |
+| rule | oklch(87% 0.012 265) | oklch(28% 0.018 265) |
+| accent | deep indigo oklch(46% 0.24 268) | molten brass oklch(76% 0.17 50) |
+| danger (SOS only) | oklch(52% 0.2 25) | oklch(65% 0.2 22) |
+| warn (check-ins only) | oklch(66% 0.15 70) | oklch(86% 0.15 98), kept clear of brass |
+| safe / focus | 56% H160 / indigo | 76% H160 / pale indigo |
 
-Night applies via `data-theme="night"` on the console root.
-**Semantic colour is never decoration:** red means SOS/incident, amber means a pending check-in.
+Semantic colour is never decoration: red = SOS/incident, warn = pending check-in.
 
-## Typography
-- Display: Bricolage Grotesque 700, roman, tracking -0.02em (headings, wordmark, SOS label)
-- Body: Geist 400/500
-- Mono: Geist Mono (timestamps, coordinates, phone numbers, states)
-- Loaded via `next/font/google` in `app/layout.tsx`; tokens map `--font-display/body/mono`.
+## Typography (two registers)
+- Display: Instrument Serif 400, roman, **lowercase** titles (`.lc`): wordmark, screen titles, primary CTA. Never bold, never italic. Proper nouns and user/incident text are never lowercased.
+- Labels: Geist Mono UPPERCASE (`.label`, or any `uppercase tracking-wider`): readouts, section labels, chips.
+- Body: Geist 400/500. Numbers: tabular (`.tabular`).
+- Loaded via `next/font/google` in `app/layout.tsx`.
+
+## Signature
+One hairline "receiver" instrument per screen (never a glowing orb): the citizen home shows real readiness (voice, location, police, check-ins); the police desk shows it as the standing-by state.
 
 ## Spacing / radius
 4-pt scale (`--space-*`). Radius: card 20px, input 12px, pill 999px.

@@ -163,7 +163,7 @@ function RakshaOpsDashboard() {
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-accent animate-pulse"></span>
-            <span className="font-display font-extrabold text-ink text-base tracking-tight">
+            <span className="font-display lc text-ink text-xl tracking-tight">
               Raksha
             </span>
           </div>
@@ -468,7 +468,9 @@ function RakshaOpsDashboard() {
           </div>
 
           <section className="shrink-0 max-h-40 overflow-y-auto custom-scrollbar p-3 text-xs border border-rule rounded-xl bg-paper-2">
-            <h2 className="font-bold mb-2 text-ink">Event timeline</h2>
+            <h2 className="label text-[11px] text-ink-3 mb-2">
+              Event timeline
+            </h2>
             {events?.length ? (
               events.map((e) => (
                 <p key={e._id} className="text-ink-2">
@@ -489,7 +491,7 @@ function RakshaOpsDashboard() {
           {/* Citizen Banner */}
           <div className="p-4 bg-paper-3 border-b border-rule">
             <div className="flex items-center justify-between">
-              <h2 className="font-display font-bold text-base text-ink">
+              <h2 className="font-display text-2xl text-ink">
                 {selectedSession?.userName ?? "Select a session"}
               </h2>
               <span
@@ -590,7 +592,7 @@ function RakshaOpsDashboard() {
                 selectedSession.ended ||
                 isPatrolDispatched
               }
-              className={`w-full py-4 px-4 rounded-xl font-display font-bold text-sm flex items-center justify-center gap-2 shadow-xl border transition-all ${
+              className={`w-full py-4 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-xl border transition-all ${
                 isPatrolDispatched
                   ? "bg-accent-soft text-accent border-accent/40 opacity-90 cursor-default"
                   : "bg-accent hover:bg-accent/90 active:scale-[0.98] text-accent-ink border-accent/40"

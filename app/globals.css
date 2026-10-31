@@ -13,8 +13,24 @@
   h1, h2, h3 {
     font-family: var(--font-display);
     font-style: normal;
-    letter-spacing: -0.02em;
+    font-weight: 400;
+    letter-spacing: -0.01em;
     overflow-wrap: anywhere;
+  }
+  /* Lumen two-register type: lowercase serif prose titles… */
+  .lc {
+    text-transform: lowercase;
+  }
+  /* …and UPPERCASE mono machine labels. */
+  .uppercase.tracking-wider,
+  .label {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
   :focus-visible {
     outline: 2px solid var(--color-focus);
