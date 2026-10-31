@@ -5,13 +5,14 @@ import { useMutation, useQuery, useAction } from "convex/react";
 import { ConvexError } from "convex/values";
 import { VoiceCall } from "../components/VoiceCall";
 import { Readiness } from "../components/Readiness";
+import { SosHold } from "../components/SosHold";
 import { Chip, btn } from "../components/ui";
 import { InCallView } from "../components/InCallView";
 import { CheckInCard } from "../components/CheckInCard";
 import { useBatteryReport } from "../components/useBatteryReport";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
-import { PhoneCall, AlertTriangle, Siren } from "lucide-react";
+import { PhoneCall, AlertTriangle } from "lucide-react";
 
 export default function RakshaUserApp() {
   const me = useQuery(api.web.me);
@@ -423,29 +424,9 @@ export default function RakshaUserApp() {
           )}
         </main>
 
-        {/* SOS: always reachable, never behind a confirmation */}
+        {/* SOS: always reachable; a 2s hold replaces a confirmation dialog */}
         <div className="sticky bottom-0 z-40 bg-paper/95 backdrop-blur-md border-t border-rule px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <button
-            id="sosButton"
-            onClick={handleSos}
-            disabled={busy}
-            className={`${btn.danger} w-full min-h-[60px] justify-between px-6`}
-          >
-            <span className="flex items-center gap-2.5">
-              <Siren className="w-5 h-5" />
-              <span className="label text-xs whitespace-nowrap">
-                {sosActive ? "SOS sent · resend" : "SOS · alert police"}
-              </span>
-            </span>
-            {!sosActive && (
-              <span className="label text-[10px] text-danger-ink/70 whitespace-nowrap">
-                one tap
-              </span>
-            )}
-          </button>
-          <p className="text-[11px] text-center text-ink-3 mt-2">
-            Demo: alerts a consenting stand-in, not a real emergency service.
-          </p>
+          <SosHold onSend={handleSos} active={sosActive} disabled={busy} />
         </div>
 
         {activeCheckIn && activeCheckIn.status === "pending" && (

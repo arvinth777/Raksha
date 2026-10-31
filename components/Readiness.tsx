@@ -1,7 +1,6 @@
 "use client";
-// Lumen apparatus for the citizen app: a hairline receiver with mono readouts of the
-// app's real state. Nothing here is invented; unknown stays unknown. A readout with an
-// `onPress` is also its own control (share location, toggle check-in alerts).
+// Readiness as a plain readout list of the app's real state. A row with `onPress`
+// is also its own control (share location, toggle check-in alerts).
 type Readout = {
   label: string;
   value: string;
@@ -12,71 +11,48 @@ type Readout = {
 
 export function Readiness({ rows }: { rows: Readout[] }) {
   return (
-    <figure className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-1">
-      <ul className="space-y-5 text-right">
-        {rows.slice(0, 2).map((r) => (
-          <Item key={r.label} {...r} />
-        ))}
-      </ul>
-      <svg
-        aria-hidden
-        viewBox="0 0 120 120"
-        className="w-28 h-28 text-accent"
-        fill="none"
-        stroke="currentColor"
-      >
-        <circle cx="60" cy="60" r="56" strokeOpacity="0.18" />
-        <circle
-          cx="60"
-          cy="60"
-          r="42"
-          strokeOpacity="0.28"
-          strokeDasharray="2 4"
-        />
-        <circle cx="60" cy="60" r="28" strokeOpacity="0.45" />
-        <path d="M60 4v14M60 102v14M4 60h14M102 60h14" strokeOpacity="0.35" />
-        <circle cx="60" cy="60" r="5" fill="currentColor" stroke="none" />
-      </svg>
-      <ul className="space-y-5">
-        {rows.slice(2, 4).map((r) => (
-          <Item key={r.label} {...r} />
-        ))}
-      </ul>
-      <figcaption className="sr-only">
-        {rows.map((r) => `${r.label}: ${r.value}`).join(". ")}
-      </figcaption>
-    </figure>
-  );
-}
-
-function Item({ label, value, ok, onPress, hint }: Readout) {
-  const body = (
-    <>
-      <span className="label block text-[10px] text-ink-3">{label}</span>
-      <span
-        className={`block text-sm tabular ${ok ? "text-ink" : "text-ink-3"}`}
-      >
-        {value}
-      </span>
-      {hint && (
-        <span className="label block text-[9px] text-accent mt-0.5">
-          {hint}
-        </span>
-      )}
-    </>
-  );
-  return (
-    <li>
-      {onPress ? (
-        <button
-          onClick={onPress}
-          className="min-h-[44px] text-inherit hover:opacity-80"
-        >
-          {body}
-        </button>
-      ) : (
-        body
-      )}
-    </li>
+    <ul className="divide-y divide-rule border-y border-rule">
+      {rows.map(({ label, value, ok, onPress, hint }) => {
+        const body = (
+          <>
+            <span className="label text-[11px] text-ink-3 shrink-0">
+              {label}
+            </span>
+            <span
+              aria-hidden
+              className="flex-1 min-w-4 border-b border-dotted border-rule -translate-y-1"
+            />
+            <span
+              className={`text-sm tabular ${ok ? "text-ink" : "text-ink-3"}`}
+            >
+              {value}
+            </span>
+            {onPress && (
+              <span aria-hidden className="text-accent text-lg leading-none">
+                ›
+              </span>
+            )}
+          </>
+        );
+        const cls =
+          "flex items-baseline gap-2 w-full min-h-[48px] py-3 text-left";
+        return (
+          <li key={label}>
+            {onPress ? (
+              <button
+                onClick={onPress}
+                title={hint}
+                aria-label={`${label}: ${value}. ${hint ?? ""}`}
+                className={`${cls} hover:bg-paper-2`}
+              >
+                {body}
+              </button>
+            ) : (
+              <div className={cls}>{body}</div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
